@@ -1,0 +1,12 @@
+{
+  "name": "baseball-stats-daily",
+  "version": "1.0.0",
+  "description": "Daily MLB statistics page generator",
+  "main": "generate-stats.js",
+  "scripts": {
+    "generate": "node generate-stats.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
