@@ -1,0 +1,873 @@
+const fetch = require('node-fetch');
+const fs = require('fs');
+
+const API_BASE = 'https://statsapi.mlb.com/api/v1';
+
+// Calculate Runs Created (Bill James basic formula)
+function calculateRC(stats) {
+    const hits = stats.hits || 0;
+    const walks = stats.baseOnBalls || 0;
+    const tb = (stats.hits || 0) + (stats.doubles || 0) + 2 * (stats.triples || 0) + 3 * (stats.homeRuns || 0);
+    const ab = stats.atBats || 0;
+    const bb = stats.baseOnBalls || 0;
+    
+    if (ab + bb === 0) return 0;
+    return ((hits + walks) * tb) / (ab + bb);
+}
+
+// Calculate FIP
+function calculateFIP(stats) {
+    const ip = parseFloat(stats.inningsPitched) || 0;
+    if (ip === 0) return 0;
+    
+    const hr = stats.homeRuns || 0;
+    const bb = stats.baseOnBalls || 0;
+    const hbp = stats.hitByPitch || 0;
+    const k = stats.strikeOuts || 0;
+    
+    return ((13 * hr + 3 * (bb + hbp) - 2 * k) / ip) + 3.10;
+}
+
+// Calculate batting average without leading zero
+function calcAVG(hits, ab) {
+    if (ab === 0) return '.000';
+    const avg = (hits / ab).toFixed(3);
+    return avg.startsWith('0') ? avg.substring(1) : avg;
+}
+
+// Calculate OBP
+function calcOBP(stats) {
+    const h = stats.hits || 0;
+    const bb = stats.baseOnBalls || 0;
+    const hbp = stats.hitByPitch || 0;
+    const ab = stats.atBats || 0;
+    const sf = stats.sacFlies || 0;
+    
+    const denominator = ab + bb + hbp + sf;
+    if (denominator === 0) return '.000';
+    const obp = ((h + bb + hbp) / denominator).toFixed(3);
+    return obp.startsWith('0') ? obp.substring(1) : obp;
+}
+
+// Calculate SLG
+function calcSLG(stats) {
+    const ab = stats.atBats || 0;
+    if (ab === 0) return '.000';
+    
+    const singles = (stats.hits || 0) - (stats.doubles || 0) - (stats.triples || 0) - (stats.homeRuns || 0);
+    const tb = singles + 2 * (stats.doubles || 0) + 3 * (stats.triples || 0) + 4 * (stats.homeRuns || 0);
+    
+    const slg = (tb / ab).toFixed(3);
+    return slg.startsWith('0') ? slg.substring(1) : slg;
+}
+
+// Calculate ERA
+function calcERA(er, ip) {
+    const innings = parseFloat(ip) || 0;
+    return innings > 0 ? ((er * 9) / innings).toFixed(2) : '0.00';
+}
+
+// Calculate WHIP
+function calcWHIP(stats) {
+    const ip = parseFloat(stats.inningsPitched) || 0;
+    if (ip === 0) return '0.00';
+    return (((stats.baseOnBalls || 0) + (stats.hits || 0)) / ip).toFixed(2);
+}
+
+async function fetchTeams(season) {
+    const response = await fetch(`${API_BASE}/teams?sportId=1&season=${season}`);
+    const data = await response.json();
+    return data.teams;
+}
+
+async function fetchTeamRoster(teamId, season) {
+    const response = await fetch(`${API_BASE}/teams/${teamId}/roster?season=${season}`);
+    const data = await response.json();
+    return data.roster || [];
+}
+
+async function fetchPlayerStats(playerId, season) {
+    const response = await fetch(`${API_BASE}/people/${playerId}/stats?stats=season&season=${season}&group=hitting,pitching`);
+    const data = await response.json();
+    return data.stats || [];
+}
+
+function createBatterRow(player, stats) {
+    const rc = Math.round(calculateRC(stats));
+    const avg = calcAVG(stats.hits, stats.atBats);
+    const obp = calcOBP(stats);
+    const slg = calcSLG(stats);
+    const position = player.position ? player.position.abbreviation : '';
+    const playerLink = `https://baseballsavant.mlb.com/savant-player/${player.person.id}`;
+    
+    return `
+        <tr class="data-row" data-pa="${(stats.atBats || 0) + (stats.baseOnBalls || 0)}">
+            <td><a href="${playerLink}" target="_blank">${player.person.fullName}</a></td>
+            <td>${position}</td>
+            <td class="stat-num">${rc}</td>
+            <td class="stat-num">${avg}</td>
+            <td class="stat-num">${obp}</td>
+            <td class="stat-num">${slg}</td>
+            <td class="stat-num">${stats.gamesPlayed || 0}</td>
+            <td class="stat-num">${stats.atBats || 0}</td>
+            <td class="stat-num">${stats.runs || 0}</td>
+            <td class="stat-num">${stats.hits || 0}</td>
+            <td class="stat-num">${stats.doubles || 0}</td>
+            <td class="stat-num">${stats.triples || 0}</td>
+            <td class="stat-num">${stats.homeRuns || 0}</td>
+            <td class="stat-num">${stats.rbi || 0}</td>
+            <td class="stat-num">${stats.baseOnBalls || 0}</td>
+            <td class="stat-num">${stats.strikeOuts || 0}</td>
+            <td class="stat-num">${stats.stolenBases || 0}</td>
+            <td class="stat-num">${stats.caughtStealing || 0}</td>
+        </tr>
+    `;
+}
+
+function createPitcherRow(player, stats) {
+    const era = calcERA(stats.earnedRuns, stats.inningsPitched);
+    const whip = calcWHIP(stats);
+    const fip = calculateFIP(stats);
+    const ip = stats.inningsPitched ? parseFloat(stats.inningsPitched) : 0;
+    const fipar = Math.round((6.00 - fip) * ip / 9);
+    const playerLink = `https://baseballsavant.mlb.com/savant-player/${player.person.id}`;
+    
+    return `
+        <tr class="data-row" data-ip="${ip}">
+            <td><a href="${playerLink}" target="_blank">${player.person.fullName}</a></td>
+            <td class="stat-num">${fipar}</td>
+            <td class="stat-num">${ip.toFixed(1)}</td>
+            <td class="stat-num">${era}</td>
+            <td class="stat-num">${fip.toFixed(2)}</td>
+            <td class="stat-num">${whip}</td>
+            <td class="stat-num">${stats.gamesPlayed || 0}</td>
+            <td class="stat-num">${stats.gamesStarted || 0}</td>
+            <td class="stat-num">${stats.wins || 0}</td>
+            <td class="stat-num">${stats.losses || 0}</td>
+            <td class="stat-num">${stats.saves || 0}</td>
+            <td class="stat-num">${stats.hits || 0}</td>
+            <td class="stat-num">${stats.runs || 0}</td>
+            <td class="stat-num">${stats.earnedRuns || 0}</td>
+            <td class="stat-num">${stats.baseOnBalls || 0}</td>
+            <td class="stat-num">${stats.strikeOuts || 0}</td>
+        </tr>
+    `;
+}
+
+async function loadTeamStats(team, season) {
+    console.log(`Loading ${team.name}...`);
+    const roster = await fetchTeamRoster(team.id, season);
+    
+    const batters = [];
+    const pitchers = [];
+    
+    for (const player of roster) {
+        const stats = await fetchPlayerStats(player.person.id, season);
+        
+        for (const statGroup of stats) {
+            if (statGroup.group.displayName === 'hitting' && statGroup.splits.length > 0) {
+                const hittingStats = statGroup.splits[0].stat;
+                batters.push({ player, stats: hittingStats });
+            }
+            
+            if (statGroup.group.displayName === 'pitching' && statGroup.splits.length > 0) {
+                const pitchingStats = statGroup.splits[0].stat;
+                pitchers.push({ player, stats: pitchingStats });
+            }
+        }
+    }
+    
+    // Sort batters by RC descending
+    batters.sort((a, b) => calculateRC(b.stats) - calculateRC(a.stats));
+    
+    // Sort pitchers by FIPAR descending
+    pitchers.sort((a, b) => {
+        const fiparA = (6.00 - calculateFIP(a.stats)) * parseFloat(a.stats.inningsPitched || 0) / 9;
+        const fiparB = (6.00 - calculateFIP(b.stats)) * parseFloat(b.stats.inningsPitched || 0) / 9;
+        return fiparB - fiparA;
+    });
+    
+    return { batters, pitchers };
+}
+
+async function checkSeasonHasData(season) {
+    console.log(`Checking if ${season} season has data...`);
+    const teams = await fetchTeams(season);
+    if (!teams || teams.length === 0) return false;
+    
+    // Check first team's roster
+    const sampleTeam = teams[0];
+    const roster = await fetchTeamRoster(sampleTeam.id, season);
+    if (!roster || roster.length === 0) return false;
+    
+    // Check if any players have stats
+    let hasStats = false;
+    for (const player of roster.slice(0, 5)) { // Just check first 5 players
+        const stats = await fetchPlayerStats(player.person.id, season);
+        for (const statGroup of stats) {
+            if (statGroup.splits && statGroup.splits.length > 0) {
+                hasStats = true;
+                break;
+            }
+        }
+        if (hasStats) break;
+    }
+    
+    console.log(`${season} has data: ${hasStats}`);
+    return hasStats;
+}
+
+async function generateHTML() {
+    const currentYear = new Date().getFullYear();
+    
+    // Determine which season to use
+    let season = currentYear;
+    const hasCurrentData = await checkSeasonHasData(currentYear);
+    
+    if (!hasCurrentData) {
+        console.log(`No data for ${currentYear}, using ${currentYear - 1}`);
+        season = currentYear - 1;
+    } else {
+        console.log(`Using ${season} season data`);
+    }
+    
+    const teams = await fetchTeams(season);
+    
+    // Separate teams by league
+    const alTeams = teams.filter(t => t.league && t.league.name === 'American League')
+        .sort((a, b) => a.name.localeCompare(b.name));
+    const nlTeams = teams.filter(t => t.league && t.league.name === 'National League')
+        .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const allTeams = [...alTeams, ...nlTeams];
+    const teamData = {};
+    
+    // Load all team stats
+    for (const team of allTeams) {
+        teamData[team.id] = await loadTeamStats(team, season);
+    }
+    
+    // Generate team HTML sections
+    let alHTML = '';
+    for (const team of alTeams) {
+        const { batters, pitchers } = teamData[team.id];
+        
+        const batterRows = batters.length > 0 
+            ? batters.map(b => createBatterRow(b.player, b.stats)).join('')
+            : '<tr><td colspan="18" style="text-align:center;">No batters</td></tr>';
+        
+        const pitcherRows = pitchers.length > 0
+            ? pitchers.map(p => createPitcherRow(p.player, p.stats)).join('')
+            : '<tr><td colspan="16" style="text-align:center;">No pitchers</td></tr>';
+        
+        alHTML += `
+            <div class="team-section">
+                <div class="team-header">${team.name}</div>
+                
+                <div class="section-title">Batters</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Pos</th>
+                            <th class="stat-num">RC</th>
+                            <th class="stat-num">BA</th>
+                            <th class="stat-num">OBP</th>
+                            <th class="stat-num">SLG</th>
+                            <th class="stat-num">G</th>
+                            <th class="stat-num">AB</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">H</th>
+                            <th class="stat-num">2B</th>
+                            <th class="stat-num">3B</th>
+                            <th class="stat-num">HR</th>
+                            <th class="stat-num">RBI</th>
+                            <th class="stat-num">BB</th>
+                            <th class="stat-num">SO</th>
+                            <th class="stat-num">SB</th>
+                            <th class="stat-num">CS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batters-${team.id}">
+                        ${batterRows}
+                    </tbody>
+                </table>
+                
+                <div class="section-title">Pitchers</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="stat-num">FIPAR</th>
+                            <th class="stat-num">IP</th>
+                            <th class="stat-num">ERA</th>
+                            <th class="stat-num">FIP</th>
+                            <th class="stat-num">WHIP</th>
+                            <th class="stat-num">G</th>
+                            <th class="stat-num">GS</th>
+                            <th class="stat-num">W</th>
+                            <th class="stat-num">L</th>
+                            <th class="stat-num">SV</th>
+                            <th class="stat-num">H</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">ER</th>
+                            <th class="stat-num">BB</th>
+                            <th class="stat-num">SO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pitchers-${team.id}">
+                        ${pitcherRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    let nlHTML = '';
+    for (const team of nlTeams) {
+        const { batters, pitchers } = teamData[team.id];
+        
+        const batterRows = batters.length > 0 
+            ? batters.map(b => createBatterRow(b.player, b.stats)).join('')
+            : '<tr><td colspan="18" style="text-align:center;">No batters</td></tr>';
+        
+        const pitcherRows = pitchers.length > 0
+            ? pitchers.map(p => createPitcherRow(p.player, p.stats)).join('')
+            : '<tr><td colspan="16" style="text-align:center;">No pitchers</td></tr>';
+        
+        nlHTML += `
+            <div class="team-section">
+                <div class="team-header">${team.name}</div>
+                
+                <div class="section-title">Batters</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Pos</th>
+                            <th class="stat-num">RC</th>
+                            <th class="stat-num">BA</th>
+                            <th class="stat-num">OBP</th>
+                            <th class="stat-num">SLG</th>
+                            <th class="stat-num">G</th>
+                            <th class="stat-num">AB</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">H</th>
+                            <th class="stat-num">2B</th>
+                            <th class="stat-num">3B</th>
+                            <th class="stat-num">HR</th>
+                            <th class="stat-num">RBI</th>
+                            <th class="stat-num">BB</th>
+                            <th class="stat-num">SO</th>
+                            <th class="stat-num">SB</th>
+                            <th class="stat-num">CS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batters-${team.id}">
+                        ${batterRows}
+                    </tbody>
+                </table>
+                
+                <div class="section-title">Pitchers</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="stat-num">FIPAR</th>
+                            <th class="stat-num">IP</th>
+                            <th class="stat-num">ERA</th>
+                            <th class="stat-num">FIP</th>
+                            <th class="stat-num">WHIP</th>
+                            <th class="stat-num">G</th>
+                            <th class="stat-num">GS</th>
+                            <th class="stat-num">W</th>
+                            <th class="stat-num">L</th>
+                            <th class="stat-num">SV</th>
+                            <th class="stat-num">H</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">ER</th>
+                            <th class="stat-num">BB</th>
+                            <th class="stat-num">SO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pitchers-${team.id}">
+                        ${pitcherRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-US', { 
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short'
+    });
+    
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Graphs Player Stats - ${season}</title>
+    <link rel="icon" href="favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background-color: #F8F8FF;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        
+        .breadcrumb {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+            color: #1e40af;
+        }
+        
+        .breadcrumb a::before {
+            content: "← ";
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 25px;
+            background: linear-gradient(135deg, #8B4513, #CD853F, #8B4513);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(139, 69, 19, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        hr {
+            height: 5px;
+            background: linear-gradient(to right, #8B4513, #CD853F, #8B4513);
+            border: none;
+            margin: 20px auto;
+            width: 95%;
+        }
+        
+        details {
+            margin: 20px auto;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #FFFAF0;
+            box-shadow: 0 2px 4px rgba(139, 69, 19, 0.2);
+        }
+        
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.2em;
+            color: #8B4513;
+            user-select: none;
+            list-style: none;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details summary::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 0 5px 8px;
+            border-color: transparent transparent transparent #8B4513;
+            transition: transform 0.3s ease;
+        }
+        
+        details[open] summary::before {
+            transform: translateY(-50%) rotate(90deg);
+        }
+        
+        details summary:hover {
+            opacity: 0.7;
+        }
+        
+        .details-content {
+            padding: 15px 0 5px 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .details-content p {
+            margin-bottom: 10px;
+        }
+        
+        .details-content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .details-content li {
+            margin-bottom: 5px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #CD853F;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(139, 69, 19, 0.15);
+        }
+        
+        .controls-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .controls-left {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #A0522D, #CD853F);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        input[type="number"] {
+            padding: 6px 10px;
+            font-size: 1em;
+            font-family: Georgia, "Times New Roman", serif;
+            border: 1px solid #CD853F;
+            border-radius: 4px;
+            background-color: white;
+            width: 60px;
+        }
+        
+        #statsInfo {
+            font-style: italic;
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .jump-nav {
+            text-align: center;
+            margin: 20px 0;
+            padding: 12px;
+            background-color: white;
+            border: 2px solid #CD853F;
+            border-radius: 8px;
+        }
+        
+        .jump-nav strong {
+            color: #8B4513;
+            margin-right: 10px;
+        }
+        
+        .jump-nav a {
+            margin: 0 10px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .jump-nav a:hover {
+            text-decoration: underline;
+            color: #1e40af;
+        }
+        
+        .league-header {
+            color: #2563eb;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #2563eb;
+        }
+        
+        .team-section {
+            margin-bottom: 35px;
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #CD853F;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(139, 69, 19, 0.15);
+        }
+        
+        .team-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #CD853F;
+            color: #2563eb;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #8B4513;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        
+        th {
+            background-color: #F5DEB3;
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 2px solid #8B4513;
+            color: #2F2F2F;
+            font-weight: bold;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1em;
+        }
+        
+        td {
+            padding: 6px;
+            border-bottom: 1px solid #E8D5B7;
+        }
+        
+        tr:hover {
+            background-color: #FFFAF0;
+        }
+        
+        .stat-num {
+            text-align: right;
+        }
+        
+        td a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        
+        td a:hover {
+            text-decoration: underline;
+            color: #1e40af;
+        }
+        
+        td:first-child {
+            font-family: Georgia, "Times New Roman", serif;
+        }
+        
+        .data-row.hidden {
+            display: none;
+        }
+        
+        @media (max-width: 800px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+            
+            .controls-inner {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .controls-left {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            button, input {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 0.75em;
+            }
+            
+            th, td {
+                padding: 4px 2px;
+            }
+            
+            .team-section {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="https://www.baseballgraphs.com/">To the Baseball Graphs Home Page</a>
+        </div>
+        
+        <div class="header">
+            <h1>Baseball Graphs Player Stats</h1>
+            <p>Team-by-Team Stats for Easy Reading</p>
+        </div>
+        
+        <hr>
+        
+        <details>
+            <summary>About these Stats</summary>
+            <div class="details-content">
+                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for the team he is currently playing for.</p>
+                
+                <p>Most of these are standard stats, but I've added a few simple sabermetric takes for sorting players by their impact.</p>
+                
+                <ul>
+                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)×TB/(AB+BB)</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                </ul>
+                
+                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to Fangraphs or Baseball Reference.</p>
+            </div>
+        </details>
+        
+        <div class="controls">
+            <div class="controls-inner">
+                <div class="controls-left">
+                    <button onclick="applyFilters()">Apply Filters</button>
+                    <div>
+                        <label for="minPA">Min PA: </label>
+                        <input type="number" id="minPA" value="0">
+                    </div>
+                    <div>
+                        <label for="minIP">Min IP: </label>
+                        <input type="number" id="minIP" value="0">
+                    </div>
+                    <button onclick="resetFilters()">Show All</button>
+                </div>
+                <div id="statsInfo">${season} Season - Generated: ${dateStr}</div>
+            </div>
+        </div>
+        
+        <div class="jump-nav">
+            <strong>Jump to:</strong>
+            <a href="#american-league">American League</a>
+            <span style="color: #999;">|</span>
+            <a href="#national-league">National League</a>
+        </div>
+        
+        <div id="content">
+            <div id="american-league">
+                <h2 class="league-header">AMERICAN LEAGUE</h2>
+                ${alHTML}
+            </div>
+            
+            <div id="national-league" style="margin-top: 20px;">
+                <h2 class="league-header">NATIONAL LEAGUE</h2>
+                ${nlHTML}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function applyFilters() {
+            const minPA = parseInt(document.getElementById('minPA').value) || 0;
+            const minIP = parseFloat(document.getElementById('minIP').value) || 0;
+            
+            // Filter batters
+            document.querySelectorAll('tbody[id^="batters-"] .data-row').forEach(row => {
+                const pa = parseInt(row.dataset.pa) || 0;
+                if (pa < minPA) {
+                    row.classList.add('hidden');
+                } else {
+                    row.classList.remove('hidden');
+                }
+            });
+            
+            // Filter pitchers
+            document.querySelectorAll('tbody[id^="pitchers-"] .data-row').forEach(row => {
+                const ip = parseFloat(row.dataset.ip) || 0;
+                if (ip < minIP) {
+                    row.classList.add('hidden');
+                } else {
+                    row.classList.remove('hidden');
+                }
+            });
+        }
+        
+        function resetFilters() {
+            document.getElementById('minPA').value = '0';
+            document.getElementById('minIP').value = '0';
+            document.querySelectorAll('.data-row').forEach(row => {
+                row.classList.remove('hidden');
+            });
+        }
+    </script>
+</body>
+</html>`;
+    
+    fs.writeFileSync('index.html', html);
+    console.log('Generated index.html successfully!');
+}
+
+generateHTML().catch(console.error);
