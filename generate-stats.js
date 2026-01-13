@@ -3,16 +3,24 @@ const fs = require('fs');
 
 const API_BASE = 'https://statsapi.mlb.com/api/v1';
 
-// Calculate Runs Created (Bill James basic formula)
+// Calculate Runs Created (OBP × TB)
 function calculateRC(stats) {
-    const hits = stats.hits || 0;
-    const walks = stats.baseOnBalls || 0;
-    const tb = (stats.hits || 0) + (stats.doubles || 0) + 2 * (stats.triples || 0) + 3 * (stats.homeRuns || 0);
-    const ab = stats.atBats || 0;
+    const h = stats.hits || 0;
     const bb = stats.baseOnBalls || 0;
+    const hbp = stats.hitByPitch || 0;
+    const ab = stats.atBats || 0;
+    const sf = stats.sacFlies || 0;
     
-    if (ab + bb === 0) return 0;
-    return ((hits + walks) * tb) / (ab + bb);
+    // Calculate OBP
+    const denominator = ab + bb + hbp + sf;
+    if (denominator === 0) return 0;
+    const obp = (h + bb + hbp) / denominator;
+    
+    // Calculate TB
+    const singles = h - (stats.doubles || 0) - (stats.triples || 0) - (stats.homeRuns || 0);
+    const tb = singles + 2 * (stats.doubles || 0) + 3 * (stats.triples || 0) + 4 * (stats.homeRuns || 0);
+    
+    return obp * tb;
 }
 
 // Calculate FIP
@@ -109,6 +117,13 @@ function createBatterRow(player, stats, playerTeamCount) {
     // Get age (current age from player data)
     const age = player.person.currentAge || '';
     
+    // Calculate PA (Plate Appearances)
+    const pa = (stats.atBats || 0) + (stats.baseOnBalls || 0) + (stats.hitByPitch || 0) + (stats.sacFlies || 0);
+    
+    // Calculate TB (Total Bases)
+    const singles = (stats.hits || 0) - (stats.doubles || 0) - (stats.triples || 0) - (stats.homeRuns || 0);
+    const tb = singles + 2 * (stats.doubles || 0) + 3 * (stats.triples || 0) + 4 * (stats.homeRuns || 0);
+    
     // Determine handedness symbol for batters
     let handednessSymbol = '';
     if (player.person.batSide) {
@@ -126,22 +141,23 @@ function createBatterRow(player, stats, playerTeamCount) {
     const nameStyle = isMultiTeam ? 'font-style: italic;' : '';
     
     return `
-        <tr class="data-row" data-pa="${(stats.atBats || 0) + (stats.baseOnBalls || 0)}">
+        <tr class="data-row" data-pa="${pa}">
             <td style="${nameStyle}"><a href="${playerLink}" target="_blank">${player.person.fullName}${handednessSymbol}</a></td>
             <td class="stat-num">${age}</td>
             <td>${position}</td>
             <td class="stat-num">${rc}</td>
+            <td class="stat-num">${stats.runs || 0}</td>
+            <td class="stat-num">${stats.rbi || 0}</td>
             <td class="stat-num">${avg}</td>
             <td class="stat-num">${obp}</td>
             <td class="stat-num">${slg}</td>
             <td class="stat-num">${stats.gamesPlayed || 0}</td>
-            <td class="stat-num">${stats.atBats || 0}</td>
-            <td class="stat-num">${stats.runs || 0}</td>
+            <td class="stat-num">${pa}</td>
             <td class="stat-num">${stats.hits || 0}</td>
             <td class="stat-num">${stats.doubles || 0}</td>
             <td class="stat-num">${stats.triples || 0}</td>
             <td class="stat-num">${stats.homeRuns || 0}</td>
-            <td class="stat-num">${stats.rbi || 0}</td>
+            <td class="stat-num">${tb}</td>
             <td class="stat-num">${stats.baseOnBalls || 0}</td>
             <td class="stat-num">${stats.strikeOuts || 0}</td>
             <td class="stat-num">${stats.stolenBases || 0}</td>
@@ -323,7 +339,7 @@ async function generateHTML() {
         
         const batterRows = batters.length > 0 
             ? batters.map(b => createBatterRow(b.player, b.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="19" style="text-align:center;">No batters</td></tr>';
+            : '<tr><td colspan="20" style="text-align:center;">No batters</td></tr>';
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
@@ -345,17 +361,18 @@ async function generateHTML() {
                             <th class="stat-num">Age</th>
                             <th>Pos</th>
                             <th class="stat-num">RC</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">RBI</th>
                             <th class="stat-num">BA</th>
                             <th class="stat-num">OBP</th>
                             <th class="stat-num">SLG</th>
                             <th class="stat-num">G</th>
-                            <th class="stat-num">AB</th>
-                            <th class="stat-num">R</th>
+                            <th class="stat-num">PA</th>
                             <th class="stat-num">H</th>
                             <th class="stat-num">2B</th>
                             <th class="stat-num">3B</th>
                             <th class="stat-num">HR</th>
-                            <th class="stat-num">RBI</th>
+                            <th class="stat-num">TB</th>
                             <th class="stat-num">BB</th>
                             <th class="stat-num">SO</th>
                             <th class="stat-num">SB</th>
@@ -404,7 +421,7 @@ async function generateHTML() {
         
         const batterRows = batters.length > 0 
             ? batters.map(b => createBatterRow(b.player, b.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="19" style="text-align:center;">No batters</td></tr>';
+            : '<tr><td colspan="20" style="text-align:center;">No batters</td></tr>';
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
@@ -426,17 +443,18 @@ async function generateHTML() {
                             <th class="stat-num">Age</th>
                             <th>Pos</th>
                             <th class="stat-num">RC</th>
+                            <th class="stat-num">R</th>
+                            <th class="stat-num">RBI</th>
                             <th class="stat-num">BA</th>
                             <th class="stat-num">OBP</th>
                             <th class="stat-num">SLG</th>
                             <th class="stat-num">G</th>
-                            <th class="stat-num">AB</th>
-                            <th class="stat-num">R</th>
+                            <th class="stat-num">PA</th>
                             <th class="stat-num">H</th>
                             <th class="stat-num">2B</th>
                             <th class="stat-num">3B</th>
                             <th class="stat-num">HR</th>
-                            <th class="stat-num">RBI</th>
+                            <th class="stat-num">TB</th>
                             <th class="stat-num">BB</th>
                             <th class="stat-num">SO</th>
                             <th class="stat-num">SB</th>
@@ -891,17 +909,17 @@ async function generateHTML() {
         <details>
             <summary>About these Stats</summary>
             <div class="details-content">
-                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are italicized. Lefties have an asterisk; switch-hitters have a cross.</p>
+                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are marked with an asterisk (*).</p>
                 
                 <p>Most of these are standard stats, but I've added a few simple sabermetric takes to sort players by their impact.</p>
                 
                 <ul>
-                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)×TB/(AB+BB)</li>
-                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
-                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)Ã—TB/(AB+BB)</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13Ã—HR)+(3Ã—(BB+HBP))-(2Ã—K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)Ã—IP/9</li>
                 </ul>
                 
-                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
+                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to Fangraphs or Baseball Reference.</p>
             </div>
         </details>
         
