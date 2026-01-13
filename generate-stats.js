@@ -92,6 +92,12 @@ async function fetchPlayerStats(playerId, season) {
     return data.stats || [];
 }
 
+async function fetchPlayerDetails(playerId) {
+    const response = await fetch(`${API_BASE}/people/${playerId}`);
+    const data = await response.json();
+    return data.people && data.people[0] ? data.people[0] : null;
+}
+
 function createBatterRow(player, stats, playerTeamCount) {
     const rc = Math.round(calculateRC(stats));
     const avg = calcAVG(stats.hits, stats.atBats);
@@ -201,17 +207,29 @@ async function loadTeamStats(team, season) {
     const pitchers = [];
     
     for (const player of roster) {
+        // Fetch full player details for age and handedness
+        const playerDetails = await fetchPlayerDetails(player.person.id);
+        
+        // Merge the detailed player info with the roster player info
+        const enrichedPlayer = {
+            ...player,
+            person: {
+                ...player.person,
+                ...(playerDetails || {})
+            }
+        };
+        
         const stats = await fetchPlayerStats(player.person.id, season);
         
         for (const statGroup of stats) {
             if (statGroup.group.displayName === 'hitting' && statGroup.splits.length > 0) {
                 const hittingStats = statGroup.splits[0].stat;
-                batters.push({ player, stats: hittingStats });
+                batters.push({ player: enrichedPlayer, stats: hittingStats });
             }
             
             if (statGroup.group.displayName === 'pitching' && statGroup.splits.length > 0) {
                 const pitchingStats = statGroup.splits[0].stat;
-                pitchers.push({ player, stats: pitchingStats });
+                pitchers.push({ player: enrichedPlayer, stats: pitchingStats });
             }
         }
     }
@@ -873,7 +891,7 @@ async function generateHTML() {
         <details>
             <summary>About these Stats</summary>
             <div class="details-content">
-                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are italicized.</p>
+                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are marked with an asterisk (*).</p>
                 
                 <p>Most of these are standard stats, but I've added a few simple sabermetric takes to sort players by their impact.</p>
                 
