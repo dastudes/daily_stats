@@ -909,17 +909,17 @@ async function generateHTML() {
         <details>
             <summary>About these Stats</summary>
             <div class="details-content">
-                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are marked with an asterisk (*).</p>
+                <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are italicized. Lefties have an asterisk; switch-hitters have a cross.</p>
                 
                 <p>Most of these are standard stats, but I've added a few simple sabermetric takes to sort players by their impact.</p>
                 
                 <ul>
-                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)Ã—TB/(AB+BB)</li>
-                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13Ã—HR)+(3Ã—(BB+HBP))-(2Ã—K))/IP + 3.10</li>
-                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)Ã—IP/9</li>
+                    <li><strong>RC (Runs Created)</strong> is simply OBPxTB</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
                 </ul>
                 
-                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to Fangraphs or Baseball Reference.</p>
+                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
             </div>
         </details>
         
