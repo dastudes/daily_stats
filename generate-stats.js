@@ -100,12 +100,29 @@ function createBatterRow(player, stats, playerTeamCount) {
     const position = player.position ? player.position.abbreviation : '';
     const playerLink = `https://baseballsavant.mlb.com/savant-player/${player.person.id}`;
     
-    // Add asterisk if player is on multiple teams
-    const multiTeam = playerTeamCount[player.person.id] > 1 ? '*' : '';
+    // Get age (current age from player data)
+    const age = player.person.currentAge || '';
+    
+    // Determine handedness symbol for batters
+    let handednessSymbol = '';
+    if (player.person.batSide) {
+        const batCode = player.person.batSide.code;
+        if (batCode === 'L') {
+            handednessSymbol = '*';
+        } else if (batCode === 'S') {
+            handednessSymbol = '†';
+        }
+        // R (right-handed) gets no symbol
+    }
+    
+    // Check if multi-team player for italics
+    const isMultiTeam = playerTeamCount[player.person.id] > 1;
+    const nameStyle = isMultiTeam ? 'font-style: italic;' : '';
     
     return `
         <tr class="data-row" data-pa="${(stats.atBats || 0) + (stats.baseOnBalls || 0)}">
-            <td><a href="${playerLink}" target="_blank">${player.person.fullName}${multiTeam}</a></td>
+            <td style="${nameStyle}"><a href="${playerLink}" target="_blank">${player.person.fullName}${handednessSymbol}</a></td>
+            <td class="stat-num">${age}</td>
             <td>${position}</td>
             <td class="stat-num">${rc}</td>
             <td class="stat-num">${avg}</td>
@@ -135,12 +152,28 @@ function createPitcherRow(player, stats, playerTeamCount) {
     const fipar = Math.round((6.00 - fip) * ip / 9);
     const playerLink = `https://baseballsavant.mlb.com/savant-player/${player.person.id}`;
     
-    // Add asterisk if player is on multiple teams
-    const multiTeam = playerTeamCount[player.person.id] > 1 ? '*' : '';
+    // Get age (current age from player data)
+    const age = player.person.currentAge || '';
+    
+    // Determine handedness symbol for pitchers
+    let handednessSymbol = '';
+    if (player.person.pitchHand) {
+        const pitchCode = player.person.pitchHand.code;
+        if (pitchCode === 'L') {
+            handednessSymbol = '*';
+        }
+        // R (right-handed) gets no symbol
+        // Pitchers don't have switch option
+    }
+    
+    // Check if multi-team player for italics
+    const isMultiTeam = playerTeamCount[player.person.id] > 1;
+    const nameStyle = isMultiTeam ? 'font-style: italic;' : '';
     
     return `
         <tr class="data-row" data-ip="${ip}">
-            <td><a href="${playerLink}" target="_blank">${player.person.fullName}${multiTeam}</a></td>
+            <td style="${nameStyle}"><a href="${playerLink}" target="_blank">${player.person.fullName}${handednessSymbol}</a></td>
+            <td class="stat-num">${age}</td>
             <td class="stat-num">${fipar}</td>
             <td class="stat-num">${ip.toFixed(1)}</td>
             <td class="stat-num">${era}</td>
@@ -272,11 +305,11 @@ async function generateHTML() {
         
         const batterRows = batters.length > 0 
             ? batters.map(b => createBatterRow(b.player, b.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="18" style="text-align:center;">No batters</td></tr>';
+            : '<tr><td colspan="19" style="text-align:center;">No batters</td></tr>';
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="16" style="text-align:center;">No pitchers</td></tr>';
+            : '<tr><td colspan="17" style="text-align:center;">No pitchers</td></tr>';
         
         const teamId = team.name.toLowerCase()
             .replace(/\s+/g, '-')
@@ -291,6 +324,7 @@ async function generateHTML() {
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th class="stat-num">Age</th>
                             <th>Pos</th>
                             <th class="stat-num">RC</th>
                             <th class="stat-num">BA</th>
@@ -320,6 +354,7 @@ async function generateHTML() {
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th class="stat-num">Age</th>
                             <th class="stat-num">FIPAR</th>
                             <th class="stat-num">IP</th>
                             <th class="stat-num">ERA</th>
@@ -351,11 +386,11 @@ async function generateHTML() {
         
         const batterRows = batters.length > 0 
             ? batters.map(b => createBatterRow(b.player, b.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="18" style="text-align:center;">No batters</td></tr>';
+            : '<tr><td colspan="19" style="text-align:center;">No batters</td></tr>';
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="16" style="text-align:center;">No pitchers</td></tr>';
+            : '<tr><td colspan="17" style="text-align:center;">No pitchers</td></tr>';
         
         const teamId = team.name.toLowerCase()
             .replace(/\s+/g, '-')
@@ -370,6 +405,7 @@ async function generateHTML() {
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th class="stat-num">Age</th>
                             <th>Pos</th>
                             <th class="stat-num">RC</th>
                             <th class="stat-num">BA</th>
@@ -399,6 +435,7 @@ async function generateHTML() {
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th class="stat-num">Age</th>
                             <th class="stat-num">FIPAR</th>
                             <th class="stat-num">IP</th>
                             <th class="stat-num">ERA</th>
@@ -478,7 +515,7 @@ async function generateHTML() {
         }
         
         .breadcrumb a::before {
-            content: "â† ";
+            content: "\2190 ";
         }
         
         .header {
@@ -827,7 +864,7 @@ async function generateHTML() {
         </div>
         
         <div class="header">
-            <h1>Baseball Graphs Player Stats</h1>
+            <h1>Baseball Graphs ${season} Player Stats</h1>
             <p>Team-by-Team Stats for Easy Reading</p>
         </div>
         
@@ -835,18 +872,18 @@ async function generateHTML() {
         
         <details>
             <summary>About these Stats</summary>
-             <div class="details-content">
+            <div class="details-content">
                 <p>This page has been created for you to easily view baseball stats for each player on each team, grouped onto one long webpage. Like how we used to read stats back in the old days, in the newspaper. You may remember that. The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. If a player has played for more than one team, his complete stats are listed for each one. Players who appear on multiple teams are marked with an asterisk (*).</p>
                 
                 <p>Most of these are standard stats, but I've added a few simple sabermetric takes to sort players by their impact.</p>
                 
                 <ul>
-                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)×TB/(AB+BB)</li>
-                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
-                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                    <li><strong>RC (Runs Created)</strong> uses Bill James' original formula (H+BB)Ã—TB/(AB+BB)</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13Ã—HR)+(3Ã—(BB+HBP))-(2Ã—K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)Ã—IP/9</li>
                 </ul>
                 
-                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
+                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to Fangraphs or Baseball Reference.</p>
             </div>
         </details>
         
