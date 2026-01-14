@@ -209,6 +209,7 @@ function createPitcherRow(player, stats, playerTeamCount) {
             <td class="stat-num">${stats.hits || 0}</td>
             <td class="stat-num">${stats.runs || 0}</td>
             <td class="stat-num">${stats.earnedRuns || 0}</td>
+            <td class="stat-num">${stats.homeRuns || 0}</td>
             <td class="stat-num">${stats.baseOnBalls || 0}</td>
             <td class="stat-num">${stats.strikeOuts || 0}</td>
         </tr>
@@ -343,7 +344,7 @@ async function generateHTML() {
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="17" style="text-align:center;">No pitchers</td></tr>';
+            : '<tr><td colspan="18" style="text-align:center;">No pitchers</td></tr>';
         
         const teamId = team.name.toLowerCase()
             .replace(/\s+/g, '-')
@@ -403,6 +404,7 @@ async function generateHTML() {
                             <th class="stat-num">H</th>
                             <th class="stat-num">R</th>
                             <th class="stat-num">ER</th>
+                            <th class="stat-num">HR</th>
                             <th class="stat-num">BB</th>
                             <th class="stat-num">SO</th>
                         </tr>
@@ -425,7 +427,7 @@ async function generateHTML() {
         
         const pitcherRows = pitchers.length > 0
             ? pitchers.map(p => createPitcherRow(p.player, p.stats, playerTeamCount)).join('')
-            : '<tr><td colspan="17" style="text-align:center;">No pitchers</td></tr>';
+            : '<tr><td colspan="18" style="text-align:center;">No pitchers</td></tr>';
         
         const teamId = team.name.toLowerCase()
             .replace(/\s+/g, '-')
@@ -485,6 +487,7 @@ async function generateHTML() {
                             <th class="stat-num">H</th>
                             <th class="stat-num">R</th>
                             <th class="stat-num">ER</th>
+                            <th class="stat-num">HR</th>
                             <th class="stat-num">BB</th>
                             <th class="stat-num">SO</th>
                         </tr>
