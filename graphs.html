@@ -15,8 +15,8 @@
             padding: 20px;
         }
         .container {
-            max-width: 960px;
-            margin: 0 auto;
+            max-width: 960px !important;
+            margin: 0 auto !important;
             padding: 0 20px;
         }
         .header {
@@ -204,7 +204,7 @@
     <div class="container">
         <div class="header">
             <h1>Baseball Graphs Daily</h1>
-            <div style="margin-top: 10px; font-size: 0.9em;">2026 Season - Updated: Wednesday, January 14, 2026</div>
+            <div style="margin-top: 10px; font-size: 0.9em;">2025 Season - Updated: Wednesday, January 14, 2026</div>
         </div>
         
         <div class="about-section">
@@ -232,7 +232,7 @@
             </div>
             
             <div id="alStandings">
-                <h2>2026 American League Standings</h2>
+                <h2>2025 American League Standings</h2>
                 
                 <div class="footer-note">
                     <strong>*</strong> = Wild Card position | PythVar = Actual Wins - Pythagorean Expected Wins
@@ -240,7 +240,7 @@
             </div>
             
             <div id="nlStandings" style="display: none;">
-                <h2>2026 National League Standings</h2>
+                <h2>2025 National League Standings</h2>
                 
                 <div class="footer-note">
                     <strong>*</strong> = Wild Card position | PythVar = Actual Wins - Pythagorean Expected Wins
@@ -397,7 +397,7 @@
         
         function updateChart1() {
             const teams = currentLeague === 'AL' ? alData : nlData;
-            document.getElementById('graph1Title').textContent = currentLeague + ' - 2026';
+            document.getElementById('graph1Title').textContent = currentLeague + ' - 2025';
             
             const ctx = document.getElementById('chart1');
             if (chart1) chart1.destroy();
@@ -501,7 +501,7 @@
         
         function updateChart2() {
             const teams = currentLeague === 'AL' ? alData : nlData;
-            document.getElementById('graph2Title').textContent = currentLeague + ' - 2026';
+            document.getElementById('graph2Title').textContent = currentLeague + ' - 2025';
             
             const ctx = document.getElementById('chart2');
             if (chart2) chart2.destroy();
@@ -598,7 +598,7 @@
         
         function updateChart3() {
             const teams = currentLeague === 'AL' ? alData : nlData;
-            document.getElementById('graph3Title').textContent = currentLeague + ' - 2026';
+            document.getElementById('graph3Title').textContent = currentLeague + ' - 2025';
             
             const ctx = document.getElementById('chart3');
             if (chart3) chart3.destroy();
