@@ -189,6 +189,12 @@ async function generateHTML() {
             continue;
         }
         
+        // Skip teams without league info
+        if (!team.league || !team.league.name) {
+            console.log(`Skipping ${team.name} - no league info`);
+            continue;
+        }
+        
         const standings = standingsMap[team.id];
         
         console.log(`Fetching stats for ${team.name}...`);
@@ -218,9 +224,9 @@ async function generateHTML() {
             teamData[team.id] = {
                 name: team.name,
                 abbreviation: team.abbreviation,
-                league: standings.league,
-                division: standings.division,
-                divisionAbbrev: standings.divisionAbbrev,
+                league: team.league.name,
+                division: team.division ? team.division.name : standings.division,
+                divisionAbbrev: team.division ? team.division.nameShort : standings.divisionAbbrev,
                 w: w,
                 l: l,
                 pct: pct,
