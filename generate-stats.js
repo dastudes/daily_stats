@@ -405,14 +405,14 @@ async function generateHTML() {
                 sb: stats.stolenBases || 0,
                 bb: stats.baseOnBalls || 0,
                 so: stats.strikeOuts || 0,
-                avg: stats.atBats > 0 ? (stats.hits / stats.atBats) : 0,
-                obp: pa > 0 ? ((stats.hits || 0) + (stats.baseOnBalls || 0) + (stats.hitByPitch || 0)) / pa : 0,
-                slg: stats.atBats > 0 ? tb / stats.atBats : 0,
-                ops: (pa > 0 ? ((stats.hits || 0) + (stats.baseOnBalls || 0) + (stats.hitByPitch || 0)) / pa : 0) + (stats.atBats > 0 ? tb / stats.atBats : 0),
+                avg: stats.atBats > 0 ? Math.round((stats.hits / stats.atBats) * 1000) / 1000 : 0,
+                obp: pa > 0 ? Math.round(((stats.hits || 0) + (stats.baseOnBalls || 0) + (stats.hitByPitch || 0)) / pa * 1000) / 1000 : 0,
+                slg: stats.atBats > 0 ? Math.round((tb / stats.atBats) * 1000) / 1000 : 0,
+                ops: Math.round(((pa > 0 ? ((stats.hits || 0) + (stats.baseOnBalls || 0) + (stats.hitByPitch || 0)) / pa : 0) + (stats.atBats > 0 ? tb / stats.atBats : 0)) * 1000) / 1000,
                 doubles: stats.doubles || 0,
                 triples: stats.triples || 0,
                 tb: tb,
-                rc: rc
+                rc: Math.round(rc)
             });
         }
         
@@ -431,15 +431,15 @@ async function generateHTML() {
                 age: p.player.person.currentAge || null,
                 g: stats.gamesPlayed || 0,
                 gs: stats.gamesStarted || 0,
-                ip: ip,
+                ip: Math.round(ip * 10) / 10,
                 w: stats.wins || 0,
                 l: stats.losses || 0,
                 sv: stats.saves || 0,
                 k: stats.strikeOuts || 0,
                 bb: stats.baseOnBalls || 0,
-                era: ip > 0 ? ((stats.earnedRuns || 0) * 9 / ip) : 0,
-                whip: ip > 0 ? ((stats.baseOnBalls || 0) + (stats.hits || 0)) / ip : 0,
-                fip: fip,
+                era: ip > 0 ? Math.round(((stats.earnedRuns || 0) * 9 / ip) * 100) / 100 : 0,
+                whip: ip > 0 ? Math.round(((stats.baseOnBalls || 0) + (stats.hits || 0)) / ip * 100) / 100 : 0,
+                fip: Math.round(fip * 100) / 100,
                 fipar: fipar,
                 h: stats.hits || 0,
                 er: stats.earnedRuns || 0
