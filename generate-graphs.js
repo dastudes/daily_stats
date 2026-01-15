@@ -972,10 +972,10 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
     </div>
     
     <script>
-        const alData = \${alTeamsData};
-        const nlData = \${nlTeamsData};
-        const batterData = \${JSON.stringify(playerStats.batters)};
-        const pitcherData = \${JSON.stringify(playerStats.pitchers)};
+        const alData = ${alTeamsData};
+        const nlData = ${nlTeamsData};
+        const batterData = ${JSON.stringify(playerStats.batters)};
+        const pitcherData = ${JSON.stringify(playerStats.pitchers)};
         let currentLeague = 'AL';
         let chart1, chart2, chart3;
         
