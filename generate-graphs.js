@@ -79,22 +79,24 @@ function calculateFIP(stats) {
 }
 
 // Calculate DER (Defensive Efficiency Record)
+// DER = 1 - ((H + E - HR) / ((IP*3) + H + E - DP - HR - K))
+// All stats from pitching perspective
 function calculateDER(stats) {
-    // DER = (BIP - H) / BIP
-    // BIP (Balls In Play) = PA - BB - SO - HR - HBP - SH - SF
-    const pa = stats.plateAppearances || 0;
-    const bb = stats.baseOnBalls || 0;
-    const so = stats.strikeOuts || 0;
-    const hr = stats.homeRuns || 0;
-    const hbp = stats.hitByPitch || 0;
-    const sh = stats.sacBunts || 0;
-    const sf = stats.sacFlies || 0;
-    const h = stats.hits || 0;
+    const ip = parseFloat(stats.inningsPitched) || 0;
+    if (ip === 0) return 0;
     
-    const bip = pa - bb - so - hr - hbp - sh - sf;
-    if (bip === 0) return 0;
+    const h = stats.hits || 0;           // Hits allowed
+    const hr = stats.homeRuns || 0;      // Home runs allowed
+    const k = stats.strikeOuts || 0;     // Strikeouts by pitchers
+    const e = stats.errors || 0;         // Errors (may not be available)
+    const dp = stats.doublePlays || 0;   // Double plays (may not be available)
     
-    return (bip - h) / bip;
+    const numerator = h + e - hr;
+    const denominator = (ip * 3) + h + e - dp - hr - k;
+    
+    if (denominator === 0) return 0;
+    
+    return 1 - (numerator / denominator);
 }
 
 async function checkSeasonHasData(season) {
@@ -276,14 +278,21 @@ async function generateHTML() {
     }
     
     // Generate the HTML
-    const dateStr = new Date().toLocaleDateString('en-US', { 
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
+    const timeStr = now.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short'
+    });
+    const dateTimeStr = dateStr + ' at ' + timeStr;
     
-    const html = generateHTMLContent(season, dateStr, teamData);
+    const html = generateHTMLContent(season, dateTimeStr, teamData);
     
     fs.writeFileSync('graphs.html', html);
     console.log('Generated graphs.html successfully!');
@@ -352,7 +361,7 @@ function generateHTMLContent(season, dateStr, teamData) {
             html += `<div class="mb-4">`;
             html += `<h3 class="text-lg font-semibold text-gray-800 mb-1">${division.name}</h3>`;
             html += `<table class="w-full text-gray-800 text-sm">`;
-            html += `<thead><tr class="border-b-2 border-amber-700">`;
+            html += `<thead><tr class="border-b-2 border-blue-800">`;
             html += `<th class="text-left py-1 px-2" style="width: 35%;">Team</th>`;
             html += `<th class="text-center py-1 px-2" style="width: 8%;">W</th>`;
             html += `<th class="text-center py-1 px-2" style="width: 8%;">L</th>`;
@@ -399,6 +408,7 @@ function generateHTMLContent(season, dateStr, teamData) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baseball Graphs Daily</title>
+    <link rel="icon" href="favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -415,32 +425,39 @@ function generateHTMLContent(season, dateStr, teamData) {
             padding: 0 20px;
         }
         .header {
-            background: linear-gradient(135deg, #8B4513, #A0522D);
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
             color: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 20px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
         .header h1 {
             margin: 0;
             font-size: 2.5em;
             font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         .breadcrumb {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 0.9em;
+            text-align: left;
+            margin-bottom: 15px;
         }
         .breadcrumb a {
             color: #2563eb;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        .breadcrumb a:hover {
             text-decoration: underline;
+            color: #1e40af;
+        }
+        .breadcrumb a::before {
+            content: "← ";
         }
         .about-section {
             background: white;
-            border: 2px solid #8B4513;
+            border: 2px solid #1e3a8a;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
@@ -452,7 +469,7 @@ function generateHTMLContent(season, dateStr, teamData) {
         .about-section summary {
             font-weight: bold;
             font-size: 1.1em;
-            color: #8B4513;
+            color: #1e3a8a;
             padding: 5px;
         }
         .about-section .content {
@@ -480,7 +497,7 @@ function generateHTMLContent(season, dateStr, teamData) {
         }
         .standings-box {
             background: white;
-            border: 4px solid #8B4513;
+            border: 4px solid #1e3a8a;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
@@ -572,7 +589,7 @@ function generateHTMLContent(season, dateStr, teamData) {
         }
         .download-button {
             padding: 8px 16px;
-            background: linear-gradient(135deg, #8B4513, #A0522D);
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
             color: white;
             border: none;
             border-radius: 5px;
@@ -592,11 +609,11 @@ function generateHTMLContent(season, dateStr, teamData) {
     </style>
 </head>
 <body>
-    <div class="breadcrumb">
-        <a href="https://baseballgraphs.com">Baseball Graphs</a> &gt; Daily Stats
-    </div>
-    
     <div class="container">
+        <div class="breadcrumb">
+            <a href="https://www.baseballgraphs.com/">To the Historic Baseball Graphs Page</a>
+        </div>
+        
         <div class="header">
             <h1>Baseball Graphs Daily</h1>
             <div style="margin-top: 10px; font-size: 0.9em;">${season} Season - Updated: ${dateStr}</div>
