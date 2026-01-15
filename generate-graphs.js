@@ -415,7 +415,7 @@ function generateHTMLContent(season, dateStr, teamData) {
             const division = divisions[divAbbrev];
             html += `<div class="mb-4">`;
             html += `<h3 class="text-lg font-semibold text-gray-800 mb-1">${division.name}</h3>`;
-            html += `<table class="w-full text-gray-800 text-sm">`;
+            html += `<table class="standings-table w-full text-gray-800 text-sm">`;
             html += `<thead><tr class="border-b-2 border-blue-800">`;
             html += `<th class="text-left py-1 px-2" style="width: 32%;">Team</th>`;
             html += `<th class="text-center py-1 px-2" style="width: 7%;">W</th>`;
@@ -474,7 +474,7 @@ function generateHTMLContent(season, dateStr, teamData) {
     <style>
         body {
             font-family: Georgia, "Times New Roman", serif;
-            background: linear-gradient(to bottom, #FFF8DC 0%, #F5DEB3 100%);
+            background: #F0F0F0;
             color: #2F2F2F;
             margin: 0;
             padding: 20px;
@@ -647,24 +647,25 @@ function generateHTMLContent(season, dateStr, teamData) {
             background: #f9f9f9;
             border-radius: 5px;
         }
-        .download-button {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
+        .download-link {
+            font-size: 0.85em;
+            color: #2563eb;
+            text-decoration: underline;
             cursor: pointer;
-            transition: transform 0.1s;
         }
-        .download-button:hover {
-            transform: scale(1.05);
+        .download-link:hover {
+            color: #1e40af;
         }
         .footer-note {
             text-align: center;
             color: #666;
             font-size: 0.85em;
             margin-top: 10px;
+        }
+        /* Standings table numeric columns use monospace for alignment */
+        .standings-table td:not(:first-child),
+        .standings-table th:not(:first-child) {
+            font-family: "Courier New", Courier, monospace;
         }
     </style>
 </head>
@@ -741,6 +742,7 @@ function generateHTMLContent(season, dateStr, teamData) {
                     <p>Hover over a data point to see the team name and wins</p>
                 </div>
                 <div class="graph-controls">
+                    <a class="download-link" onclick="downloadChart(1)">Download Graph</a>
                     <div class="about-graph">
                         <details>
                             <summary>About This Graph</summary>
@@ -752,7 +754,6 @@ function generateHTMLContent(season, dateStr, teamData) {
                             </div>
                         </details>
                     </div>
-                    <button class="download-button" onclick="downloadChart(1)">Download Graph</button>
                 </div>
             </div>
             
@@ -768,6 +769,7 @@ function generateHTMLContent(season, dateStr, teamData) {
                     <p>Hover over a data point to see the team name and runs scored</p>
                 </div>
                 <div class="graph-controls">
+                    <a class="download-link" onclick="downloadChart(2)">Download Graph</a>
                     <div class="about-graph">
                         <details>
                             <summary>About This Graph</summary>
@@ -779,7 +781,6 @@ function generateHTMLContent(season, dateStr, teamData) {
                             </div>
                         </details>
                     </div>
-                    <button class="download-button" onclick="downloadChart(2)">Download Graph</button>
                 </div>
             </div>
             
@@ -795,6 +796,7 @@ function generateHTMLContent(season, dateStr, teamData) {
                     <p>Hover over a data point to see the team name and runs allowed</p>
                 </div>
                 <div class="graph-controls">
+                    <a class="download-link" onclick="downloadChart(3)">Download Graph</a>
                     <div class="about-graph">
                         <details>
                             <summary>About This Graph</summary>
@@ -806,7 +808,6 @@ function generateHTMLContent(season, dateStr, teamData) {
                             </div>
                         </details>
                     </div>
-                    <button class="download-button" onclick="downloadChart(3)">Download Graph</button>
                 </div>
             </div>
         </div>
