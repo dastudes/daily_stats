@@ -185,6 +185,7 @@ async function generateHTML() {
     
     // Create a map of team standings info
     const standingsMap = {};
+    let loggedSample = false;
     for (const divisionRecord of standingsRecords) {
         const league = divisionRecord.league.name;
         const divisionName = divisionRecord.division.name;
@@ -192,12 +193,24 @@ async function generateHTML() {
         
         for (const teamRecord of divisionRecord.teamRecords) {
             const teamId = teamRecord.team.id;
+            
+            // Log one sample teamRecord to see all available fields
+            if (!loggedSample) {
+                console.log('Sample teamRecord fields:', Object.keys(teamRecord).join(', '));
+                console.log('Sample teamRecord:', JSON.stringify(teamRecord).substring(0, 500));
+                loggedSample = true;
+            }
+            
             standingsMap[teamId] = {
                 w: teamRecord.wins,
                 l: teamRecord.losses,
                 gb: teamRecord.gamesBack,
                 wcGb: teamRecord.wildCardGamesBack,
                 wcRank: teamRecord.wildCardRank,
+                clinchIndicator: teamRecord.clinchIndicator,
+                clinched: teamRecord.clinched,
+                wildCardClinched: teamRecord.wildCardClinched,
+                divisionChamp: teamRecord.divisionChamp,
                 league: league,
                 division: divisionName,
                 divisionAbbrev: divisionAbbrev
@@ -274,6 +287,7 @@ async function generateHTML() {
                 gb: standings.gb,
                 wcGb: standings.wcGb,
                 wcRank: standings.wcRank,
+                clinchIndicator: standings.clinchIndicator,
                 rs: rs,
                 ra: ra,
                 gamesPlayed: gamesPlayed,
@@ -414,10 +428,11 @@ function generateHTMLContent(season, dateStr, teamData) {
             html += `</tr></thead><tbody class="text-sm">`;
             
             division.teams.forEach(team => {
-                // Wild card team = not division winner (gb !== "-") but in playoff spot (wcGb is "-" or starts with "+")
-                const isDivisionWinner = team.gb === '-' || team.gb === '0.0';
-                const inWildCardSpot = team.wcGb === '-' || (team.wcGb && team.wcGb.startsWith('+'));
-                const wcAsterisk = (!isDivisionWinner && inWildCardSpot) ? '*' : '';
+                // Division winner has BOTH gb: "-" AND wcGb: "-"
+                // Wild card team has wcGb that starts with "+" OR wcGb: "-" but gb is NOT "-"
+                const isDivisionWinner = (team.gb === '-' || team.gb === '0.0') && team.wcGb === '-';
+                const inWildCardSpot = !isDivisionWinner && (team.wcGb === '-' || (team.wcGb && team.wcGb.startsWith('+')));
+                const wcAsterisk = inWildCardSpot ? '*' : '';
                 const bbrefUrl = `https://www.baseball-reference.com/teams/${team.abbreviation}/${season}.shtml`;
                 
                 html += `<tr class="hover:bg-blue-50 leading-tight">`;
