@@ -81,15 +81,35 @@ function calculateFIP(stats) {
 // Calculate DER (Defensive Efficiency Record)
 // DER = 1 - ((H + E - HR) / ((IP*3) + H + E - DP - HR - K))
 // All stats from pitching perspective
-function calculateDER(stats) {
+function calculateDER(stats, teamName) {
     const ip = parseFloat(stats.inningsPitched) || 0;
     if (ip === 0) return 0;
     
     const h = stats.hits || 0;           // Hits allowed
     const hr = stats.homeRuns || 0;      // Home runs allowed
     const k = stats.strikeOuts || 0;     // Strikeouts by pitchers
-    const e = stats.errors || 0;         // Errors (may not be available)
-    const dp = stats.doublePlays || 0;   // Double plays (may not be available)
+    
+    // Check if errors and double plays are available
+    const hasErrors = stats.errors !== undefined;
+    const hasDP = stats.doublePlays !== undefined;
+    
+    // Log first team's available stats for debugging
+    if (teamName && teamName.includes('Yankees')) {
+        console.log(`DER Debug for ${teamName}: IP=${ip}, H=${h}, HR=${hr}, K=${k}, E=${stats.errors}, DP=${stats.doublePlays}`);
+    }
+    
+    // If we don't have errors/DP, use simplified formula
+    // Simplified: DER ≈ 1 - (H - HR) / (IP * 3 - K + H - HR)
+    // This approximates balls in play that became hits vs total balls in play
+    if (!hasErrors || !hasDP) {
+        const hitsOnBIP = h - hr;  // Hits on balls in play (exclude HR)
+        const bip = (ip * 3) - k + hitsOnBIP;  // Approximate balls in play
+        if (bip <= 0) return 0;
+        return 1 - (hitsOnBIP / bip);
+    }
+    
+    const e = stats.errors || 0;
+    const dp = stats.doublePlays || 0;
     
     const numerator = h + e - hr;
     const denominator = (ip * 3) + h + e - dp - hr - k;
@@ -111,6 +131,25 @@ async function checkSeasonHasData(season) {
         const standings = await fetchStandings(season);
         if (!standings || standings.length === 0) {
             console.log(`${season}: No standings found`);
+            return false;
+        }
+        
+        // Check if there are actual team records with wins/losses
+        let hasGamesPlayed = false;
+        for (const division of standings) {
+            if (division.teamRecords && division.teamRecords.length > 0) {
+                for (const team of division.teamRecords) {
+                    if (team.wins > 0 || team.losses > 0) {
+                        hasGamesPlayed = true;
+                        break;
+                    }
+                }
+            }
+            if (hasGamesPlayed) break;
+        }
+        
+        if (!hasGamesPlayed) {
+            console.log(`${season}: No games played yet`);
             return false;
         }
         
@@ -245,7 +284,7 @@ async function generateHTML() {
                 obp: calculateOBP(hittingStats),
                 iso: calculateISO(hittingStats),
                 fip: calculateFIP(pitchingStats),
-                der: calculateDER(pitchingStats)
+                der: calculateDER(pitchingStats, team.name)
             };
             
             processedCount++;
@@ -283,11 +322,13 @@ async function generateHTML() {
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
-        day: 'numeric' 
+        day: 'numeric',
+        timeZone: 'America/New_York'
     });
     const timeStr = now.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
+        timeZone: 'America/New_York',
         timeZoneName: 'short'
     });
     const dateTimeStr = dateStr + ' at ' + timeStr;
