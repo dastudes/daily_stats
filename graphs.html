@@ -236,7 +236,7 @@
             list-style: none;
             position: relative;
             padding-left: 25px;
-            background-color: #f3f4f6;
+            background-color: white;
             border-radius: 8px;
         }
         .about-stats summary::-webkit-details-marker {
@@ -259,7 +259,7 @@
             transform: translateY(-50%) rotate(90deg);
         }
         .about-stats summary:hover {
-            background-color: #e5e7eb;
+            background-color: #f9fafb;
         }
         .about-stats-content {
             padding: 15px 10px 10px 25px;
@@ -391,6 +391,14 @@
             background-color: #FEF3C7;
             font-weight: bold;
         }
+        .leaderboard-table td a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .leaderboard-table td a:hover {
+            text-decoration: underline;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -401,7 +409,7 @@
         
         <div class="header">
             <h1>Baseball Graphs Daily</h1>
-            <div style="margin-top: 10px; font-size: 0.9em;">2025 Season - Updated: Friday, January 16, 2026 at 11:56 AM EST</div>
+            <div style="margin-top: 10px; font-size: 0.9em;">2025 Season - Updated: Friday, January 16, 2026 at 12:36 PM EST</div>
         </div>
         
         <div class="about-section">
@@ -1262,6 +1270,28 @@
             updatePitcherLeaderboard();
         }
         
+        // Deduplicate players who played for multiple teams
+        function deduplicatePlayers(players) {
+            const playerMap = new Map();
+            players.forEach(p => {
+                if (playerMap.has(p.playerId)) {
+                    // Player already exists, add team to list
+                    const existing = playerMap.get(p.playerId);
+                    if (!existing.teams.includes(p.teamAbbr)) {
+                        existing.teams.push(p.teamAbbr);
+                    }
+                } else {
+                    // First occurrence, store with teams array
+                    playerMap.set(p.playerId, { ...p, teams: [p.teamAbbr] });
+                }
+            });
+            // Convert back to array and create combined team string
+            return Array.from(playerMap.values()).map(p => ({
+                ...p,
+                teamAbbr: p.teams.join('/')
+            }));
+        }
+        
         function updateBatterLeaderboard() {
             const stat = batterSortStat;
             const ascending = batterSortAsc;
@@ -1272,6 +1302,9 @@
             
             // Filter by league
             let filtered = batterData.filter(p => league === 'MLB' || p.league === league);
+            
+            // Deduplicate multi-team players
+            filtered = deduplicatePlayers(filtered);
             
             // Filter by age
             if (maxAge) {
@@ -1307,7 +1340,7 @@
             const tbody = document.getElementById('batterLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td>' + p.name + '</td>';
+                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
@@ -1337,6 +1370,9 @@
             
             // Filter by league
             let filtered = pitcherData.filter(p => league === 'MLB' || p.league === league);
+            
+            // Deduplicate multi-team players
+            filtered = deduplicatePlayers(filtered);
             
             // Filter by age
             if (maxAge) {
@@ -1372,7 +1408,7 @@
             const tbody = document.getElementById('pitcherLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td>' + p.name + '</td>';
+                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
