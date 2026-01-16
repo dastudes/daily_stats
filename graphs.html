@@ -409,7 +409,7 @@
         
         <div class="header">
             <h1>Baseball Graphs Daily</h1>
-            <div style="margin-top: 10px; font-size: 0.9em;">2025 Season - Updated: Friday, January 16, 2026 at 12:36 PM EST</div>
+            <div style="margin-top: 10px; font-size: 0.9em;">2025 Season - Updated: Friday, January 16, 2026 at 1:34 PM EST</div>
         </div>
         
         <div class="about-section">
@@ -1340,7 +1340,7 @@
             const tbody = document.getElementById('batterLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
+                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
@@ -1408,7 +1408,7 @@
             const tbody = document.getElementById('pitcherLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
+                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
