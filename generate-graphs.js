@@ -723,7 +723,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             list-style: none;
             position: relative;
             padding-left: 25px;
-            background-color: #f3f4f6;
+            background-color: white;
             border-radius: 8px;
         }
         .about-stats summary::-webkit-details-marker {
@@ -746,7 +746,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             transform: translateY(-50%) rotate(90deg);
         }
         .about-stats summary:hover {
-            background-color: #e5e7eb;
+            background-color: #f9fafb;
         }
         .about-stats-content {
             padding: 15px 10px 10px 25px;
@@ -877,6 +877,14 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
         .leaderboard-table td.sorted-col {
             background-color: #FEF3C7;
             font-weight: bold;
+        }
+        .leaderboard-table td a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .leaderboard-table td a:hover {
+            text-decoration: underline;
+            color: #1e40af;
         }
     </style>
 </head>
@@ -1749,6 +1757,28 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             updatePitcherLeaderboard();
         }
         
+        // Deduplicate players who played for multiple teams
+        function deduplicatePlayers(players) {
+            const playerMap = new Map();
+            players.forEach(p => {
+                if (playerMap.has(p.playerId)) {
+                    // Player already exists, add team to list
+                    const existing = playerMap.get(p.playerId);
+                    if (!existing.teams.includes(p.teamAbbr)) {
+                        existing.teams.push(p.teamAbbr);
+                    }
+                } else {
+                    // First occurrence, store with teams array
+                    playerMap.set(p.playerId, { ...p, teams: [p.teamAbbr] });
+                }
+            });
+            // Convert back to array and create combined team string
+            return Array.from(playerMap.values()).map(p => ({
+                ...p,
+                teamAbbr: p.teams.join('/')
+            }));
+        }
+        
         function updateBatterLeaderboard() {
             const stat = batterSortStat;
             const ascending = batterSortAsc;
@@ -1759,6 +1789,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             
             // Filter by league
             let filtered = batterData.filter(p => league === 'MLB' || p.league === league);
+            
+            // Deduplicate multi-team players
+            filtered = deduplicatePlayers(filtered);
             
             // Filter by age
             if (maxAge) {
@@ -1794,7 +1827,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             const tbody = document.getElementById('batterLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td>' + p.name + '</td>';
+                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
@@ -1824,6 +1857,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             
             // Filter by league
             let filtered = pitcherData.filter(p => league === 'MLB' || p.league === league);
+            
+            // Deduplicate multi-team players
+            filtered = deduplicatePlayers(filtered);
             
             // Filter by age
             if (maxAge) {
@@ -1859,7 +1895,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             const tbody = document.getElementById('pitcherLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
                 let row = '<tr>';
-                row += '<td>' + p.name + '</td>';
+                row += '<td><a href="https://www.mlb.com/player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
