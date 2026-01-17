@@ -911,9 +911,8 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 <summary>About These Graphs</summary>
                 <div class="content">
                     <p><strong>Welcome to Baseball Graphs Daily!</strong></p>
-                    <p>This page automatically updates each morning with the latest MLB standings and three analytical graphs that help understand team performance.</p>
-                    <p>The <strong>Run Differential</strong> graph shows how teams perform offensively and defensively, with Pythagorean win expectancy lines. The <strong>Offensive Profile</strong> graph examines how teams score runs through on-base percentage and power. The <strong>Pitching & Defense</strong> graph separates pitching quality (FIP) from fielding effectiveness (DER).</p>
-                    <p>Select American League or National League to view standings and graphs for that league. Click the tabs to switch between the three graphs. For detailed player statistics, visit our <a href="index.html" style="color: #2563eb; text-decoration: underline;">Daily Stats page</a>.</p>
+                    <p>This page automatically updates each morning with the latest MLB standings, graphs and leaderboards for the baseball nut who want to get the big picture. The idea here is that numbers are nice, but pictures sometimes tell the story a little more easily. Scroll on down to see if you agree. Each section has some text to help you understand what you're seeing.</p>
+                    <p>For up-to-date statistics for all players, visit our <a href="https://dastudes.github.io/daily/player_stats.html" style="color: #2563eb; text-decoration: underline;">Daily Player Stats page</a>.</p>
                 </div>
             </details>
         </div>
@@ -934,8 +933,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 <h2>${season} American League Standings</h2>
                 ${alStandingsHTML}
                 <div class="footer-note">
-                    <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card<br>
-                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins
+                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins<br>
+                    <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card
+                    
                 </div>
             </div>
             
@@ -943,8 +943,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 <h2>${season} National League Standings</h2>
                 ${nlStandingsHTML}
                 <div class="footer-note">
-                    <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card<br>
-                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins
+                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins<br>
+                    <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card
+                
                 </div>
             </div>
         </div>
@@ -973,10 +974,10 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                         <details>
                             <summary>About This Graph</summary>
                             <div class="content">
-                                <p><strong>Run Differential</strong></p>
-                                <p>This graph shows how well each team performed scoring and allowing runs, which are the drivers of baseball success. The Runs Allowed axis (Y axis) is reversed, so that the best defensive teams are at the top and the best scoring teams are on the right.</p>
-                                <p>The dotted lines are based on the Pythagorean Theorem (RS²)/(RS²+RA²), which is a good predictor of winning percentage. The lines are drawn at different winning percentages so you can compare teams in different areas of the graph. The best teams will be above the .600 line.</p>
-                                <p>If you hover over a datapoint, you'll see the team name and actual wins. The PythVar column in the standings shows the difference between actual wins and Pythagorean wins.</p>
+                                <p><strong>The Roots of Scoring Runs</strong></p>
+                                <p class="mb-2">There are lots of way to break down how teams score runs. This graph is based on two key factors: getting runners on base and slugging them home. The potent combination of these two factors has led to the widespread use of OPS (On-base Average plus Slugging Percentage) as a simple but effective way to evaluate batters.</p>
+                            
+                                <p class="mb-2">On this graph, I use Isolated Power (ISO, which is Slugging Percentage minus Batting Average) instead of Slugging Percentage because that makes the differences between teams more apparent. The dotted lines show league averages for reference. The best scoring teams will be in the upper right quadrant of the graph, but the X axis (OBP) tends to be more important than the Y axis (ISO). Still, this graph effectively shows different styles of run scoring between teams.</p>
                             </div>
                         </details>
                     </div>
@@ -1027,10 +1028,12 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                         <details>
                             <summary>About This Graph</summary>
                             <div class="content">
-                                <p><strong>Separating Pitching and Fielding</strong></p>
-                                <p>The easiest way to judge pitching effectiveness is to isolate outcomes that don't involve fielders: strikeouts, walks, and home runs. That's what FIP measures: (HR×13 + BB×3 - K×2) / IP. Lower FIP indicates better pitching.</p>
-                                <p>All other batted balls involve fielders. To measure fielding, we use Defensive Efficiency Record (DER), which is the percent of batted balls (excluding home runs) turned into outs by fielders. Higher DER indicates better fielding.</p>
-                                <p>The FIP axis is reversed so that better pitching teams are on the right. The best overall teams (upper right) combine strong pitching and fielding.</p>
+                                <p><strong>Separating the Impact of Pitching and Fielding</strong></p>
+                                <p class="mb-2">The easiest way to judge the effectiveness of pitching is to isolate those things that don't involve fielders: Strikeouts, Walks and Home Runs. That's what FIP ((HRA*13+BB*3-K*2)/IP) measures. (Technical note: I don't add the league adjustment to FIP, because it doesn't matter for graphing purposes.)</p>
+                            
+                                <p class="mb-2">All other batting events are batted balls that involve fielders. To measure what happens on those balls, we use Defense Efficiency Ratio (DER), which is simply the percent of batted balls (not including home runs) turned into outs by fielders. DER reflects a lot of complex stuff, such the quality of the fielders, the gloves, the ballpark configurations, how hard the ball was hit, where it was hit, and probably a few more things I haven't thought of. So it isn't a perfect measure of fielding excellence but it's not bad and it's easy to calculate.</p> 
+
+                                <p>The best teams at turning batted balls into outs are on the top and the FIP axis (on the bottom) is reversed so that the best pitching teams are on the right.</p>
                             </div>
                         </details>
                     </div>
@@ -1049,10 +1052,20 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
         <details class="about-stats">
             <summary>About These Stats</summary>
             <div class="about-stats-content">
-                <p>These leaderboards show individual player statistics for the current season. Click any column header to sort by that stat. Click again to reverse the sort order.</p>
-                <p><strong>RC (Runs Created)</strong> estimates a batter's total offensive contribution using the formula OBP × TB. It combines a player's ability to get on base with their power.</p>
-                <p><strong>FIPAR (FIP Above Replacement)</strong> measures a pitcher's value using only strikeouts, walks, and home runs—outcomes the pitcher controls directly. Higher is better.</p>
-                <p>Use the filters below each table to focus on qualified players, specific leagues, or age groups. The "Qualified" checkbox filters for players with enough playing time to be statistically meaningful.</p>
+                <p>These leaderboards show individual player statistics for the current season. Click any column header to sort by that stat. Click again to reverse the sort order. Use the filters above each table to focus on qualified players, specific leagues, or age groups. The "Qualified" checkbox filters for players with enough playing time to be statistically meaningful.</p>
+                                
+                <p>The stats have been pulled from the official MLB Stats API. Player names link to their Baseball Savant profiles for advanced metrics and visualizations. Lefties have an asterisk; switch-hitters have a cross.</p>
+                
+                <p>Most of these are standard stats, but I've added a few simple sabermetric takes to sort players by their impact.</p>
+                
+                <ul>
+                    <li><strong>RC (Runs Created)</strong> is simply OBPxTB</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                </ul>
+                
+                <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
+                
             </div>
         </details>
         
