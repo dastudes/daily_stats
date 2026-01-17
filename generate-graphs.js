@@ -525,18 +525,22 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
         .breadcrumb {
             text-align: left;
             margin-bottom: 15px;
+            font-size: 1.1em;
         }
         .breadcrumb a {
             color: #2563eb;
             text-decoration: none;
-            font-size: 1.2em;
         }
         .breadcrumb a:hover {
             text-decoration: underline;
             color: #1e40af;
         }
-        .breadcrumb a::before {
-            content: "← ";
+        .breadcrumb .separator {
+            color: #6b7280;
+            margin: 0 8px;
+        }
+        .breadcrumb .current {
+            color: #374151;
         }
         .about-section {
             background: white;
@@ -894,7 +898,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
 <body>
     <div class="container">
         <div class="breadcrumb">
-            <a href="https://www.baseballgraphs.com/">To the Historic Baseball Graphs Page</a>
+            <a href="https://www.baseballgraphs.com/">Baseball Graphs Home</a><span class="separator">&gt;</span><span class="current">Baseball Graphs Daily</span>
         </div>
         
         <div class="header">
