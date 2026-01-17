@@ -785,7 +785,8 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             gap: 5px;
         }
         .control-label {
-            color: #6b7280;
+            color: #374151;
+            font-weight: 600;
             margin-right: 3px;
         }
         .filter-link {
@@ -808,6 +809,8 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             align-items: center;
             gap: 4px;
             cursor: pointer;
+            color: #374151;
+            font-weight: 600;
         }
         .checkbox-label input[type="checkbox"] {
             width: 16px;
@@ -1090,15 +1093,18 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                         <th class="text-right">G</th>
                         <th class="text-right">PA</th>
                         <th class="text-right sortable" id="th-rc" onclick="sortBatters('rc')">RC</th>
-                        <th class="text-right sortable" id="th-hr" onclick="sortBatters('hr')">HR</th>
-                        <th class="text-right sortable" id="th-rbi" onclick="sortBatters('rbi')">RBI</th>
                         <th class="text-right sortable" id="th-r" onclick="sortBatters('r')">R</th>
-                        <th class="text-right sortable" id="th-h" onclick="sortBatters('h')">H</th>
-                        <th class="text-right sortable" id="th-sb" onclick="sortBatters('sb')">SB</th>
+                        <th class="text-right sortable" id="th-rbi" onclick="sortBatters('rbi')">RBI</th>
                         <th class="text-right sortable" id="th-avg" onclick="sortBatters('avg')">AVG</th>
                         <th class="text-right sortable" id="th-obp" onclick="sortBatters('obp')">OBP</th>
                         <th class="text-right sortable" id="th-slg" onclick="sortBatters('slg')">SLG</th>
                         <th class="text-right sortable" id="th-ops" onclick="sortBatters('ops')">OPS</th>
+                        <th class="text-right sortable" id="th-h" onclick="sortBatters('h')">H</th>
+                        <th class="text-right sortable" id="th-doubles" onclick="sortBatters('doubles')">2B</th>
+                        <th class="text-right sortable" id="th-triples" onclick="sortBatters('triples')">3B</th>
+                        <th class="text-right sortable" id="th-hr" onclick="sortBatters('hr')">HR</th>
+                        <th class="text-right sortable" id="th-tb" onclick="sortBatters('tb')">TB</th>
+                        <th class="text-right sortable" id="th-sb" onclick="sortBatters('sb')">SB</th>
                     </tr>
                 </thead>
                 <tbody id="batterLeaderboardBody">
@@ -1145,14 +1151,18 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                         <th class="text-left">Team</th>
                         <th class="text-right">Age</th>
                         <th class="text-right">G</th>
-                        <th class="text-right sortable" id="th-ip" onclick="sortPitchers('ip')">IP</th>
-                        <th class="text-right sortable" id="th-fipar" onclick="sortPitchers('fipar')">FIPAR</th>
-                        <th class="text-right sortable" id="th-w" onclick="sortPitchers('w')">W</th>
-                        <th class="text-right sortable" id="th-sv" onclick="sortPitchers('sv')">SV</th>
-                        <th class="text-right sortable" id="th-k" onclick="sortPitchers('k')">K</th>
-                        <th class="text-right sortable" id="th-era" onclick="sortPitchers('era')">ERA</th>
-                        <th class="text-right sortable" id="th-whip" onclick="sortPitchers('whip')">WHIP</th>
-                        <th class="text-right sortable" id="th-fip" onclick="sortPitchers('fip')">FIP</th>
+                        <th class="text-right sortable" id="th-p-fipar" onclick="sortPitchers('fipar')">FIPAR</th>
+                        <th class="text-right sortable" id="th-p-ip" onclick="sortPitchers('ip')">IP</th>
+                        <th class="text-right sortable" id="th-p-era" onclick="sortPitchers('era')">ERA</th>
+                        <th class="text-right sortable" id="th-p-fip" onclick="sortPitchers('fip')">FIP</th>
+                        <th class="text-right sortable" id="th-p-whip" onclick="sortPitchers('whip')">WHIP</th>
+                        <th class="text-right sortable" id="th-p-gs" onclick="sortPitchers('gs')">GS</th>
+                        <th class="text-right sortable" id="th-p-w" onclick="sortPitchers('w')">W</th>
+                        <th class="text-right sortable" id="th-p-l" onclick="sortPitchers('l')">L</th>
+                        <th class="text-right sortable" id="th-p-sv" onclick="sortPitchers('sv')">SV</th>
+                        <th class="text-right sortable" id="th-p-hr" onclick="sortPitchers('hr')">HR</th>
+                        <th class="text-right sortable" id="th-p-bb" onclick="sortPitchers('bb')">BB</th>
+                        <th class="text-right sortable" id="th-p-k" onclick="sortPitchers('k')">K</th>
                     </tr>
                 </thead>
                 <tbody id="pitcherLeaderboardBody">
@@ -1719,7 +1729,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             } else {
                 pitcherSortStat = stat;
                 // Default ascending for ERA, WHIP, FIP; descending for others
-                pitcherSortAsc = ['era', 'whip', 'fip'].includes(stat);
+                pitcherSortAsc = ['era', 'whip', 'fip', 'hr', 'bb', 'l'].includes(stat);
             }
             updatePitcherLeaderboard();
         }
@@ -1811,7 +1821,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             const leaders = filtered.slice(0, count);
             
             // Update header styling
-            const sortableStats = ['rc', 'hr', 'rbi', 'r', 'h', 'sb', 'avg', 'obp', 'slg', 'ops'];
+            const sortableStats = ['rc', 'r', 'rbi', 'avg', 'obp', 'slg', 'ops', 'h', 'doubles', 'triples', 'hr', 'tb', 'sb'];
             sortableStats.forEach(s => {
                 const th = document.getElementById('th-' + s);
                 if (th) {
@@ -1833,15 +1843,18 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 row += '<td class="text-right">' + p.g + '</td>';
                 row += '<td class="text-right">' + p.pa + '</td>';
                 row += '<td class="text-right' + (stat === 'rc' ? ' sorted-col' : '') + '">' + p.rc + '</td>';
-                row += '<td class="text-right' + (stat === 'hr' ? ' sorted-col' : '') + '">' + p.hr + '</td>';
-                row += '<td class="text-right' + (stat === 'rbi' ? ' sorted-col' : '') + '">' + p.rbi + '</td>';
                 row += '<td class="text-right' + (stat === 'r' ? ' sorted-col' : '') + '">' + p.r + '</td>';
-                row += '<td class="text-right' + (stat === 'h' ? ' sorted-col' : '') + '">' + p.h + '</td>';
-                row += '<td class="text-right' + (stat === 'sb' ? ' sorted-col' : '') + '">' + p.sb + '</td>';
+                row += '<td class="text-right' + (stat === 'rbi' ? ' sorted-col' : '') + '">' + p.rbi + '</td>';
                 row += '<td class="text-right' + (stat === 'avg' ? ' sorted-col' : '') + '">' + formatRate(p.avg) + '</td>';
                 row += '<td class="text-right' + (stat === 'obp' ? ' sorted-col' : '') + '">' + formatRate(p.obp) + '</td>';
                 row += '<td class="text-right' + (stat === 'slg' ? ' sorted-col' : '') + '">' + formatRate(p.slg) + '</td>';
                 row += '<td class="text-right' + (stat === 'ops' ? ' sorted-col' : '') + '">' + formatRate(p.ops) + '</td>';
+                row += '<td class="text-right' + (stat === 'h' ? ' sorted-col' : '') + '">' + p.h + '</td>';
+                row += '<td class="text-right' + (stat === 'doubles' ? ' sorted-col' : '') + '">' + p.doubles + '</td>';
+                row += '<td class="text-right' + (stat === 'triples' ? ' sorted-col' : '') + '">' + p.triples + '</td>';
+                row += '<td class="text-right' + (stat === 'hr' ? ' sorted-col' : '') + '">' + p.hr + '</td>';
+                row += '<td class="text-right' + (stat === 'tb' ? ' sorted-col' : '') + '">' + p.tb + '</td>';
+                row += '<td class="text-right' + (stat === 'sb' ? ' sorted-col' : '') + '">' + p.sb + '</td>';
                 row += '</tr>';
                 return row;
             }).join('');
@@ -1879,9 +1892,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             const leaders = filtered.slice(0, count);
             
             // Update header styling
-            const sortableStats = ['ip', 'fipar', 'w', 'sv', 'k', 'era', 'whip', 'fip'];
+            const sortableStats = ['fipar', 'ip', 'era', 'fip', 'whip', 'gs', 'w', 'l', 'sv', 'hr', 'bb', 'k'];
             sortableStats.forEach(s => {
-                const th = document.getElementById('th-' + s);
+                const th = document.getElementById('th-p-' + s);
                 if (th) {
                     th.classList.remove('sorted', 'asc');
                     if (s === stat) {
@@ -1899,14 +1912,18 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
-                row += '<td class="text-right' + (stat === 'ip' ? ' sorted-col' : '') + '">' + p.ip.toFixed(1) + '</td>';
                 row += '<td class="text-right' + (stat === 'fipar' ? ' sorted-col' : '') + '">' + p.fipar + '</td>';
-                row += '<td class="text-right' + (stat === 'w' ? ' sorted-col' : '') + '">' + p.w + '</td>';
-                row += '<td class="text-right' + (stat === 'sv' ? ' sorted-col' : '') + '">' + p.sv + '</td>';
-                row += '<td class="text-right' + (stat === 'k' ? ' sorted-col' : '') + '">' + p.k + '</td>';
+                row += '<td class="text-right' + (stat === 'ip' ? ' sorted-col' : '') + '">' + p.ip.toFixed(1) + '</td>';
                 row += '<td class="text-right' + (stat === 'era' ? ' sorted-col' : '') + '">' + p.era.toFixed(2) + '</td>';
-                row += '<td class="text-right' + (stat === 'whip' ? ' sorted-col' : '') + '">' + p.whip.toFixed(2) + '</td>';
                 row += '<td class="text-right' + (stat === 'fip' ? ' sorted-col' : '') + '">' + p.fip.toFixed(2) + '</td>';
+                row += '<td class="text-right' + (stat === 'whip' ? ' sorted-col' : '') + '">' + p.whip.toFixed(2) + '</td>';
+                row += '<td class="text-right' + (stat === 'gs' ? ' sorted-col' : '') + '">' + p.gs + '</td>';
+                row += '<td class="text-right' + (stat === 'w' ? ' sorted-col' : '') + '">' + p.w + '</td>';
+                row += '<td class="text-right' + (stat === 'l' ? ' sorted-col' : '') + '">' + p.l + '</td>';
+                row += '<td class="text-right' + (stat === 'sv' ? ' sorted-col' : '') + '">' + p.sv + '</td>';
+                row += '<td class="text-right' + (stat === 'hr' ? ' sorted-col' : '') + '">' + (p.hr || 0) + '</td>';
+                row += '<td class="text-right' + (stat === 'bb' ? ' sorted-col' : '') + '">' + p.bb + '</td>';
+                row += '<td class="text-right' + (stat === 'k' ? ' sorted-col' : '') + '">' + p.k + '</td>';
                 row += '</tr>';
                 return row;
             }).join('');
