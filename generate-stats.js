@@ -1042,7 +1042,7 @@ async function generateHTML() {
     
     <div class="container">
         <div class="breadcrumb">
-            <a href="https://www.baseballgraphs.com/">Baseball Graphs Home</a><span class="separator">&gt;</span><a href="https://www.baseballgraphs.com/">Baseball Graphs Daily</a><span class="separator">&gt;</span><span class="current">Baseball Graphs Daily Player Stats</span>
+            <a href="https://www.baseballgraphs.com/">Baseball Graphs Home</a><span class="separator">&gt;</span><a href="https://dastudes.github.io/daily/">Baseball Graphs Daily</a><span class="separator">&gt;</span><span class="current">Baseball Graphs Daily Player Stats</span>
         </div>
         
         <div class="header">
