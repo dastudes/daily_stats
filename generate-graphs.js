@@ -757,6 +757,15 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             line-height: 1.6;
         }
         .about-stats-content p {
+            margin-bottom: 5px;
+        }
+    
+        .about-stats-content p {
+            margin-bottom: 10px;
+        }
+        
+        .about-stats-content ul {
+            margin-left: 20px;
             margin-bottom: 10px;
         }
         .leaderboard-box {
@@ -973,12 +982,14 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                     <div class="about-graph">
                         <details>
                             <summary>About This Graph</summary>
-                            <div class="content">
-                                <p><strong>The Roots of Scoring Runs</strong></p>
-                                <p class="mb-2">There are lots of way to break down how teams score runs. This graph is based on two key factors: getting runners on base and slugging them home. The potent combination of these two factors has led to the widespread use of OPS (On-base Average plus Slugging Percentage) as a simple but effective way to evaluate batters.</p>
+                            <div class="details-content">
+                            <p><strong>Run Differential</strong></p>
+                            <p class="mb-2">This graph shows how well each team performed scoring and allowing runs, which are the drivers of baseball success. The Runs Allowed axis (the Y axis) is in reverse, so that the best defensive teams are at the top of the graph and the best scoring teams are on the right.</p>
                             
-                                <p class="mb-2">On this graph, I use Isolated Power (ISO, which is Slugging Percentage minus Batting Average) instead of Slugging Percentage because that makes the differences between teams more apparent. The dotted lines show league averages for reference. The best scoring teams will be in the upper right quadrant of the graph, but the X axis (OBP) tends to be more important than the Y axis (ISO). Still, this graph effectively shows different styles of run scoring between teams.</p>
-                            </div>
+                            <p class="mb-2">The dotted lines are based on the Pythagorean Theorem (RS^2)/(RS^2+RA^2), which is a pretty good predictor of winning percentage. The lines are drawn at different winning percentages so you can compare teams in different areas of the graph. The best teams will be above the .600 line.</p>
+                            
+                            <p>If you hover over a datapoint, you'll see how many actual wins that team achived. If you go back up to the Standings table, the "PythVar" is the difference between the actual wins and Pythagorean wins. Differences between Pythagorean and actual wins is typically based on random distribution patterns more than anything else.</p>
+                        </div>
                         </details>
                     </div>
                 </div>
@@ -1000,12 +1011,12 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                     <div class="about-graph">
                         <details>
                             <summary>About This Graph</summary>
-                            <div class="content">
-                                <p><strong>How Teams Score Runs</strong></p>
-                                <p>This graph examines the two key components of offense: getting on base (OBP) and hitting for power (ISO - Isolated Power). ISO is calculated as slugging percentage minus batting average, measuring extra bases per at-bat.</p>
-                                <p>Teams in the upper right excel at both getting on base and hitting for power, producing the most runs. Teams in the lower left struggle with both. The dotted lines show league averages for reference.</p>
-                                <p>This helps identify whether a team's offensive success comes from patience at the plate, power hitting, or a combination of both.</p>
-                            </div>
+                            <div class="details-content">
+                            <p><strong>The Roots of Scoring Runs</strong></p>
+                            <p class="mb-2">There are lots of way to break down how teams score runs. This graph is based on two key factors: getting runners on base and slugging them home. The potent combination of these two factors has led to the widespread use of OPS (On-base Average plus Slugging Percentage) as a simple but effective way to evaluate batters.</p>
+                            
+                            <p class="mb-2">On this graph, I use Isolated Power (ISO, which is Slugging Percentage minus Batting Average) instead of Slugging Percentage because that makes the differences between teams more apparent. The best scoring teams will be in the upper right quadrant of the graph, but the X axis (OBP) tends to be more important than the Y axis (ISO). Still, this graph effectively shows different styles of run scoring between teams.</p>
+                        </div>
                         </details>
                     </div>
                 </div>
