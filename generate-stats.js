@@ -669,21 +669,22 @@ async function generateHTML() {
         .breadcrumb {
             text-align: left;
             margin-bottom: 15px;
+            font-size: 1.1em;
         }
-        
         .breadcrumb a {
             color: #2563eb;
             text-decoration: none;
-            font-size: 1.2em;
         }
-        
         .breadcrumb a:hover {
             text-decoration: underline;
             color: #1e40af;
         }
-        
-        .breadcrumb a::before {
-            content: "\\2190 ";
+        .breadcrumb .separator {
+            color: #6b7280;
+            margin: 0 8px;
+        }
+        .breadcrumb .current {
+            color: #374151;
         }
         
         .header {
@@ -1041,7 +1042,7 @@ async function generateHTML() {
     
     <div class="container">
         <div class="breadcrumb">
-            <a href="https://www.baseballgraphs.com/">To the Baseball Graphs Home Page</a>
+            <a href="https://www.baseballgraphs.com/">Baseball Graphs Home</a><span class="separator">&gt;</span><a href="https://www.baseballgraphs.com/">Baseball Graphs Daily</a><span class="separator">&gt;</span><span class="current">Baseball Graphs Daily Player Stats</span>
         </div>
         
         <div class="header">
@@ -1295,8 +1296,8 @@ async function generateHTML() {
 </body>
 </html>`;
     
-    fs.writeFileSync('index.html', html);
-    console.log('Generated index.html successfully!');
+    fs.writeFileSync('player_stats.html', html);
+    console.log('Generated player_stats.html successfully!');
     
     // Write the JSON file for leaderboards
     fs.writeFileSync('player-stats.json', JSON.stringify(playerStatsJson, null, 2));
