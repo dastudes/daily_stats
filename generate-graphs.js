@@ -1738,7 +1738,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
         
         function getBatterHandedness(batSide) {
             if (batSide === 'L') return '*';
-            if (batSide === 'S') return '†';
+            if (batSide === 'S') return '&dagger;';
             return '';
         }
         
