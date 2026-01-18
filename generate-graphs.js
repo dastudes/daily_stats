@@ -508,7 +508,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             margin: 0;
             padding: 20px;
         }
-        .container {
+        .page-container {
             max-width: 960px;
             margin: 0 auto;
         }
@@ -524,11 +524,12 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
         .header h1 {
             font-size: 2.2em;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin: 0 0 8px 0;
         }
         .header p {
             font-size: 1.1em;
             opacity: 0.95;
+            margin: 0;
         }
         .breadcrumb {
             text-align: left;
@@ -919,7 +920,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="page-container">
         <div class="breadcrumb">
             <a href="https://www.baseballgraphs.com/">← Baseball Graphs Home</a>
         </div>
@@ -1062,7 +1063,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
     </div>
     
     <!-- Leaderboards Section -->
-    <div class="container" style="margin-top: 30px;">
+    <div class="page-container" style="margin-top: 30px;">
         <div class="leaderboard-header-small">
             <h2>Player Leaderboards</h2>
         </div>
