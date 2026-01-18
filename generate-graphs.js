@@ -768,6 +768,13 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             margin-left: 20px;
             margin-bottom: 10px;
         }
+        .about-stats-content a {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        .about-stats-content a:hover {
+            color: #1e40af;
+        }
         .leaderboard-box {
             background-color: white;
             padding: 20px;
@@ -865,11 +872,11 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             background-color: #DEB887;
         }
         .leaderboard-table th.sorted::after {
-            content: ' ▼';
+            content: ' â–¼';
             font-size: 0.7em;
         }
         .leaderboard-table th.sorted.asc::after {
-            content: ' ▲';
+            content: ' â–²';
         }
         .leaderboard-table td {
             padding: 6px;
@@ -942,7 +949,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 <h2>${season} American League Standings</h2>
                 ${alStandingsHTML}
                 <div class="footer-note">
-                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins<br>
+                    WC = Wild Card Rank | PythVar = Actual Wins âˆ’ Pythagorean Expected Wins<br>
                     <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card
                     
                 </div>
@@ -952,7 +959,7 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 <h2>${season} National League Standings</h2>
                 ${nlStandingsHTML}
                 <div class="footer-note">
-                    WC = Wild Card Rank | PythVar = Actual Wins − Pythagorean Expected Wins<br>
+                    WC = Wild Card Rank | PythVar = Actual Wins âˆ’ Pythagorean Expected Wins<br>
                     <strong>z</strong>=Clinched Division &amp; Best Record | <strong>y</strong>=Clinched Division | <strong>w</strong>=Clinched Wild Card
                 
                 </div>
@@ -1071,8 +1078,8 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 
                 <ul>
                     <li><strong>RC (Runs Created)</strong> is simply OBPxTB</li>
-                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
-                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13Ã—HR)+(3Ã—(BB+HBP))-(2Ã—K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)Ã—IP/9</li>
                 </ul>
                 
                 <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
@@ -1726,6 +1733,17 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             return val.toFixed(3).replace(/^0/, '');
         }
         
+        function getBatterHandedness(batSide) {
+            if (batSide === 'L') return '*';
+            if (batSide === 'S') return '†';
+            return '';
+        }
+        
+        function getPitcherHandedness(pitchHand) {
+            if (pitchHand === 'L') return '*';
+            return '';
+        }
+        
         function formatStat(val, stat) {
             const rateStats = ['avg', 'obp', 'slg', 'ops'];
             const twoDecimalStats = ['era', 'whip', 'fip'];
@@ -1864,8 +1882,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             // Build table rows
             const tbody = document.getElementById('batterLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
+                const handedness = getBatterHandedness(p.batSide);
                 let row = '<tr>';
-                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
+                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + handedness + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
@@ -1935,8 +1954,9 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             // Build table rows
             const tbody = document.getElementById('pitcherLeaderboardBody');
             tbody.innerHTML = leaders.map(p => {
+                const handedness = getPitcherHandedness(p.pitchHand);
                 let row = '<tr>';
-                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + '</a></td>';
+                row += '<td><a href="https://baseballsavant.mlb.com/savant-player/' + p.playerId + '" target="_blank">' + p.name + handedness + '</a></td>';
                 row += '<td>' + p.teamAbbr + '</td>';
                 row += '<td class="text-right">' + (p.age || '') + '</td>';
                 row += '<td class="text-right">' + p.g + '</td>';
