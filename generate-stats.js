@@ -41,7 +41,7 @@ function getTeamFangraphsSlug(teamName) {
     return slugMap[teamName] || teamName.toLowerCase().replace(/\s+/g, '-');
 }
 
-// Calculate Runs Created (OBP × TB)
+// Calculate Runs Created (OBP Ã— TB)
 function calculateRC(stats) {
     const h = stats.hits || 0;
     const bb = stats.baseOnBalls || 0;
@@ -169,7 +169,7 @@ function createBatterRow(player, stats, playerTeamCount) {
         if (batCode === 'L') {
             handednessSymbol = '*';
         } else if (batCode === 'S') {
-            handednessSymbol = '†';
+            handednessSymbol = 'â€ ';
         }
         // R (right-handed) gets no symbol
     }
@@ -412,7 +412,8 @@ async function generateHTML() {
                 doubles: stats.doubles || 0,
                 triples: stats.triples || 0,
                 tb: tb,
-                rc: Math.round(rc)
+                rc: Math.round(rc),
+                batSide: b.player.person.batSide ? b.player.person.batSide.code : null
             });
         }
         
@@ -443,7 +444,8 @@ async function generateHTML() {
                 fip: Math.round(fip * 100) / 100,
                 fipar: fipar,
                 h: stats.hits || 0,
-                er: stats.earnedRuns || 0
+                er: stats.earnedRuns || 0,
+                pitchHand: p.player.person.pitchHand ? p.player.person.pitchHand.code : null
             });
         }
     }
@@ -1061,8 +1063,8 @@ async function generateHTML() {
                 
                 <ul>
                     <li><strong>RC (Runs Created)</strong> is simply OBPxTB</li>
-                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13×HR)+(3×(BB+HBP))-(2×K))/IP + 3.10</li>
-                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)×IP/9</li>
+                    <li><strong>FIP (Fielding Independent Pitching)</strong> ((13Ã—HR)+(3Ã—(BB+HBP))-(2Ã—K))/IP + 3.10</li>
+                    <li><strong>FIPAR (FIP Above Replacement)</strong> (6-FIP)Ã—IP/9</li>
                 </ul>
                 
                 <p>These stats are value approximations only. Please don't quote them. For actual good sabermetric stats, go to <a href="https://www.fangraphs.com/">Fangraphs</a> or <a href="https://www.baseball-reference.com/">Baseball Reference</a>.</p>
