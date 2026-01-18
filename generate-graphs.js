@@ -495,6 +495,12 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Georgia, "Times New Roman", serif;
             background: #F0F0F0;
@@ -503,9 +509,8 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
             padding: 20px;
         }
         .container {
-            max-width: 960px !important;
-            margin: 0 auto !important;
-            padding: 0 20px;
+            max-width: 960px;
+            margin: 0 auto;
         }
         .header {
             text-align: center;
