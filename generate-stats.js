@@ -681,12 +681,33 @@ async function generateHTML() {
             text-decoration: underline;
             color: #1e40af;
         }
-        .breadcrumb .separator {
-            color: #6b7280;
-            margin: 0 8px;
+        
+        .nav-bar {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .breadcrumb .current {
+        .nav-bar a {
+            flex: 1;
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: background-color 0.2s;
+        }
+        .nav-bar a.active {
+            background: #8B4513;
+            color: white;
+        }
+        .nav-bar a:not(.active) {
+            background: #e5e7eb;
             color: #374151;
+        }
+        .nav-bar a:not(.active):hover {
+            background: #d1d5db;
         }
         
         .header {
@@ -1044,7 +1065,7 @@ async function generateHTML() {
     
     <div class="container">
         <div class="breadcrumb">
-            <a href="https://www.baseballgraphs.com/">Baseball Graphs Home</a><span class="separator">&gt;</span><a href="https://dastudes.github.io/daily/">Baseball Graphs Daily</a><span class="separator">&gt;</span><span class="current">Baseball Graphs Daily Player Stats</span>
+            <a href="https://www.baseballgraphs.com/">← Baseball Graphs Home</a>
         </div>
         
         <div class="header">
@@ -1052,7 +1073,10 @@ async function generateHTML() {
             <p>Team-by-Team Stats for Easy Reading</p>
         </div>
         
-        <hr>
+        <div class="nav-bar">
+            <a href="index.html">Graphs & Standings</a>
+            <a href="player_stats.html" class="active">Player Stats</a>
+        </div>
         
         <details>
             <summary>About these Stats</summary>
