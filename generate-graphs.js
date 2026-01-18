@@ -1857,10 +1857,14 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 filtered = filtered.filter(p => p.age && p.age <= maxAge);
             }
             
-            // Filter by qualifier (3.1 PA per team game = ~502 PA for full season, scale by games played)
+            // Filter by qualifier (3.1 PA per team game, scaled to average games played)
             if (qualifiedOnly) {
-                const qualifyingPA = 502;
-                filtered = filtered.filter(p => p.pa >= qualifyingPA * 0.5);
+                // Calculate average games played from top players to estimate season progress
+                const sortedByGames = [...filtered].sort((a, b) => b.g - a.g);
+                const topPlayers = sortedByGames.slice(0, 30);
+                const avgGames = topPlayers.reduce((sum, p) => sum + p.g, 0) / topPlayers.length;
+                const qualifyingPA = Math.round(avgGames * 3.1);
+                filtered = filtered.filter(p => p.pa >= qualifyingPA);
             }
             
             // Sort
@@ -1929,10 +1933,14 @@ function generateHTMLContent(season, dateStr, teamData, playerStats) {
                 filtered = filtered.filter(p => p.age && p.age <= maxAge);
             }
             
-            // Filter by qualifier (1 IP per team game = ~162 IP for full season)
+            // Filter by qualifier (1 IP per team game, scaled to average games played)
             if (qualifiedOnly) {
-                const qualifyingIP = 162;
-                filtered = filtered.filter(p => p.ip >= qualifyingIP * 0.5);
+                // Use batter data to estimate season progress (more reliable sample)
+                const sortedByGames = [...batterData].sort((a, b) => b.g - a.g);
+                const topPlayers = sortedByGames.slice(0, 30);
+                const avgGames = topPlayers.reduce((sum, p) => sum + p.g, 0) / topPlayers.length;
+                const qualifyingIP = Math.round(avgGames * 1.0);
+                filtered = filtered.filter(p => p.ip >= qualifyingIP);
             }
             
             // Sort
