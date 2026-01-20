@@ -1,6 +1,6 @@
 {
   "season": 2025,
-  "updated": "2026-01-19T11:42:24.194Z",
+  "updated": "2026-01-20T11:45:30.801Z",
   "batters": [
     {
       "name": "Brent Rooker",
@@ -2519,7 +2519,7 @@
       "team": "Boston Red Sox",
       "teamAbbr": "BOS",
       "league": "AL",
-      "age": 28,
+      "age": 29,
       "g": 12,
       "pa": 23,
       "ab": 23,
@@ -12023,7 +12023,7 @@
       "team": "Toronto Blue Jays",
       "teamAbbr": "TOR",
       "league": "AL",
-      "age": 28,
+      "age": 29,
       "g": 12,
       "pa": 23,
       "ab": 23,
@@ -25981,7 +25981,7 @@
       "team": "Boston Red Sox",
       "teamAbbr": "BOS",
       "league": "AL",
-      "age": 28,
+      "age": 29,
       "g": 1,
       "gs": 0,
       "ip": 1,
@@ -35749,7 +35749,7 @@
       "team": "Toronto Blue Jays",
       "teamAbbr": "TOR",
       "league": "AL",
-      "age": 28,
+      "age": 29,
       "g": 1,
       "gs": 0,
       "ip": 1,
