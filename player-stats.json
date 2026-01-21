@@ -1,6 +1,6 @@
 {
   "season": 2025,
-  "updated": "2026-01-20T23:08:05.879Z",
+  "updated": "2026-01-21T11:46:51.139Z",
   "batters": [
     {
       "name": "Brent Rooker",
@@ -20717,7 +20717,7 @@
       "team": "San Diego Padres",
       "teamAbbr": "SD",
       "league": "NL",
-      "age": 31,
+      "age": 32,
       "g": 135,
       "pa": 510,
       "ab": 419,
@@ -39901,7 +39901,7 @@
       "team": "Colorado Rockies",
       "teamAbbr": "COL",
       "league": "NL",
-      "age": 30,
+      "age": 31,
       "g": 30,
       "gs": 23,
       "ip": 130,
@@ -41005,7 +41005,7 @@
       "team": "Los Angeles Dodgers",
       "teamAbbr": "LAD",
       "league": "NL",
-      "age": 26,
+      "age": 27,
       "g": 10,
       "gs": 1,
       "ip": 29.2,
