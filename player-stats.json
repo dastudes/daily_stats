@@ -1,6 +1,6 @@
 {
   "season": 2025,
-  "updated": "2026-01-21T11:46:51.139Z",
+  "updated": "2026-01-22T11:50:03.434Z",
   "batters": [
     {
       "name": "Brent Rooker",
@@ -14480,7 +14480,7 @@
       "team": "Chicago Cubs",
       "teamAbbr": "CHC",
       "league": "NL",
-      "age": 35,
+      "age": 36,
       "g": 53,
       "pa": 107,
       "ab": 100,
@@ -18746,7 +18746,7 @@
       "team": "New York Mets",
       "teamAbbr": "NYM",
       "league": "NL",
-      "age": 31,
+      "age": 32,
       "g": 113,
       "pa": 337,
       "ab": 310,
@@ -38821,7 +38821,7 @@
       "team": "Chicago Cubs",
       "teamAbbr": "CHC",
       "league": "NL",
-      "age": 35,
+      "age": 36,
       "g": 4,
       "gs": 0,
       "ip": 3.2,
